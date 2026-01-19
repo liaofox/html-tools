@@ -17,7 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let conversionHistory = JSON.parse(sessionStorage.getItem('conversionHistory')) || [];
     let currentInputValue = '';
     let lastRecordedValue = '';
-    let hasCurrentInput = false; // 标记是否有未完成的输入
+    let isNewRecord = true; // 标记是否是新记录（输入框为空时开始新记录）
     
     // 初始化显示历史记录
     updateHistoryDisplay();
@@ -152,27 +152,21 @@ document.addEventListener('DOMContentLoaded', function() {
         return result;
     }
     
-    // 检查是否需要记录
-    function shouldRecordConversion(originalAmount, chineseAmount) {
-        // 如果输入为空，不记录
-        if (!originalAmount || originalAmount.trim() === '') {
-            return false;
+    // 检查是否需要记录新记录
+    function checkIfNewRecord(amount) {
+        // 如果输入为空，则下一次输入是新记录
+        if (amount === '') {
+            isNewRecord = true;
+            return true;
         }
         
-        // 如果是错误转换，不记录
-        if (chineseAmount.startsWith('错误')) {
-            return false;
+        // 如果之前标记为新记录，则这次是新记录
+        if (isNewRecord) {
+            isNewRecord = false;
+            return true;
         }
         
-        // 如果与最近一次记录相同，不重复记录
-        if (conversionHistory.length > 0) {
-            const lastRecord = conversionHistory[0];
-            if (lastRecord.original === originalAmount && lastRecord.chinese === chineseAmount) {
-                return false;
-            }
-        }
-        
-        return true;
+        return false;
     }
     
     // 实时转换金额
@@ -189,8 +183,8 @@ document.addEventListener('DOMContentLoaded', function() {
             outputStatus.textContent = '结果将实时显示';
             outputStatus.style.color = '';
             
-            // 输入框清空，重置标记
-            hasCurrentInput = false;
+            // 输入框清空，标记下一次为新记录
+            isNewRecord = true;
             return;
         }
         
@@ -222,19 +216,18 @@ document.addEventListener('DOMContentLoaded', function() {
             outputStatus.textContent = '转换成功';
             outputStatus.style.color = 'var(--success-color)';
             
+            // 检查是否需要记录新记录
+            const shouldCreateNewRecord = checkIfNewRecord(amount);
+            
             // 记录历史（仅在有效输入时）
-            if (shouldRecordConversion(amount, chineseAmount)) {
-                // 检查是否应该记录新条目
-                if (!hasCurrentInput || lastRecordedValue === '') {
-                    // 新输入，创建新记录
-                    recordConversionHistory(amount, chineseAmount);
-                    hasCurrentInput = true;
-                    lastRecordedValue = amount;
-                } else if (hasCurrentInput && amount !== lastRecordedValue) {
-                    // 更新现有记录
-                    updateLastConversionHistory(amount, chineseAmount);
-                    lastRecordedValue = amount;
-                }
+            if (shouldCreateNewRecord) {
+                // 创建新记录
+                recordConversionHistory(amount, chineseAmount);
+                lastRecordedValue = amount;
+            } else if (lastRecordedValue !== amount) {
+                // 更新现有记录
+                updateLastConversionHistory(amount, chineseAmount);
+                lastRecordedValue = amount;
             }
         }
     });
@@ -333,8 +326,8 @@ document.addEventListener('DOMContentLoaded', function() {
         charCount.textContent = '0 位';
         amountInput.focus();
         
-        // 重置输入标记
-        hasCurrentInput = false;
+        // 标记下一次为新记录
+        isNewRecord = true;
         lastRecordedValue = '';
     });
     

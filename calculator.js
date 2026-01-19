@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
     let lastOperation = '';
     let calculatorMode = 'light'; // 'light' 或 'dark'
     let lastResult = '';
+    let isNewCalculation = true;
     
     // 计算历史 - 使用sessionStorage
     let calcHistory = JSON.parse(sessionStorage.getItem('calcHistory')) || [];
@@ -54,6 +55,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (calcInputValue === '0' || shouldResetInput) {
             calcInputValue = num;
             shouldResetInput = false;
+            isNewCalculation = false;
         } else {
             calcInputValue += num;
         }
@@ -111,6 +113,7 @@ document.addEventListener('DOMContentLoaded', function() {
         lastOperation = '';
         shouldResetInput = false;
         lastResult = '';
+        isNewCalculation = true;
     }
     
     // 退格
@@ -143,7 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 设置运算
     function setOperation(op) {
-        if (lastOperation && !shouldResetInput) {
+        if (lastOperation && !shouldResetInput && !isNewCalculation) {
             calculate();
         }
         
@@ -157,11 +160,12 @@ document.addEventListener('DOMContentLoaded', function() {
         lastOperation = op;
         calcExpressionValue = `${calcInputValue} ${operatorMap[op]}`;
         shouldResetInput = true;
+        isNewCalculation = false;
     }
     
     // 计算
     function calculate() {
-        if (!lastOperation || shouldResetInput) return;
+        if (!lastOperation || shouldResetInput || isNewCalculation) return;
         
         const prev = parseFloat(calcExpressionValue.split(' ')[0]);
         const current = parseFloat(calcInputValue);
@@ -203,6 +207,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         lastOperation = '';
         shouldResetInput = true;
+        isNewCalculation = true;
     }
     
     // 获取运算符符号
@@ -251,6 +256,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 calcExpressionValue = `${calcInputValue}^`;
                 shouldResetInput = true;
                 lastOperation = 'power';
+                isNewCalculation = false;
                 return;
         }
         
@@ -274,6 +280,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         shouldResetInput = true;
+        isNewCalculation = true;
     }
     
     // 输入π
@@ -281,6 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (calcInputValue === '0' || shouldResetInput) {
             calcInputValue = Math.PI.toString().slice(0, 10);
             shouldResetInput = false;
+            isNewCalculation = false;
         } else {
             calcInputValue += Math.PI.toString().slice(0, 10);
         }
@@ -291,6 +299,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (calcInputValue === '0' || shouldResetInput) {
             calcInputValue = Math.E.toString().slice(0, 10);
             shouldResetInput = false;
+            isNewCalculation = false;
         } else {
             calcInputValue += Math.E.toString().slice(0, 10);
         }

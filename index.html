@@ -22,7 +22,7 @@
             <section class="tools-section">
                 <div class="section-header">
                     <h2><i class="fas fa-wrench"></i> 工具集合</h2>
-                    <p class="section-subtitle">点击下方标签切换工具</p>
+                    <p class="section-subtitle">点击标签切换工具</p>
                 </div>
                 
                 <div class="tools-tabs">
@@ -32,16 +32,13 @@
                     <button class="tab-btn" data-tab="calculator">
                         <i class="fas fa-calculator"></i> 科学计算器
                     </button>
-                    <button class="tab-btn" data-tab="more-tools">
-                        <i class="fas fa-plus"></i> 更多工具
-                    </button>
                 </div>
                 
                 <!-- 金额转大写工具 -->
                 <div class="tool-content active" id="amount-converter">
                     <div class="tool-description">
                         <h3><i class="fas fa-exchange-alt"></i> 人民币金额转大写</h3>
-                        <p>输入数值金额，实时转换为中文大写金额格式（如：1234.56 → 壹仟贰佰叁拾肆元伍角陆分）</p>
+                        <p>输入数值金额，实时转换为中文大写金额格式</p>
                     </div>
                     
                     <div class="converter-container">
@@ -93,15 +90,30 @@
                 <div class="tool-content" id="calculator">
                     <div class="tool-description">
                         <h3><i class="fas fa-calculator"></i> 科学计算器</h3>
-                        <p>功能全面的科学计算器，支持基本运算、三角函数、对数、指数等科学计算功能</p>
+                        <p>功能全面的科学计算器，支持基本运算、三角函数、对数、指数等</p>
                     </div>
                     
-                    <div class="calculator-container">
-                        <div class="calculator-display">
-                            <div class="calc-expression" id="calc-expression"></div>
-                            <div class="calc-input" id="calc-input">0</div>
+                    <div class="calculator-container-vertical">
+                        <!-- 上半部分：显示区域和历史记录 -->
+                        <div class="calculator-top">
+                            <div class="calculator-display">
+                                <div class="calc-expression" id="calc-expression"></div>
+                                <div class="calc-input" id="calc-input">0</div>
+                            </div>
+                            
+                            <div class="calculator-history">
+                                <h4><i class="fas fa-history"></i> 计算历史 <span id="calc-history-count">0</span></h4>
+                                <div class="calc-history-list" id="calc-history-list">
+                                    <div class="history-empty">
+                                        <i class="far fa-clock"></i>
+                                        <p>暂无计算历史</p>
+                                        <p class="small-text">计算操作将记录在这里</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         
+                        <!-- 下半部分：键盘区域 -->
                         <div class="calculator-buttons">
                             <div class="calc-row">
                                 <button class="calc-btn func-btn" data-action="clear">C</button>
@@ -153,26 +165,6 @@
                                 </button>
                             </div>
                         </div>
-                        
-                        <div class="calculator-history">
-                            <h4><i class="fas fa-history"></i> 本次计算历史 <span id="calc-history-count">0</span></h4>
-                            <div class="calc-history-list" id="calc-history-list">
-                                <div class="history-empty">
-                                    <i class="far fa-clock"></i>
-                                    <p>暂无计算历史</p>
-                                    <p class="small-text">计算操作将记录在这里</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 更多工具（占位） -->
-                <div class="tool-content" id="more-tools">
-                    <div class="coming-soon">
-                        <i class="fas fa-tools fa-3x"></i>
-                        <h3>更多工具即将上线</h3>
-                        <p>我们正在开发更多实用工具，敬请期待！</p>
                     </div>
                 </div>
             </section>
@@ -180,158 +172,42 @@
             <!-- 右侧网站收藏夹 -->
             <section class="bookmarks-section">
                 <div class="section-header">
-                    <h2><i class="fas fa-bookmark"></i> 网站收藏夹</h2>
-                    <p class="section-subtitle">管理您常用的网站链接</p>
-                </div>
-                
-                <div class="bookmarks-controls">
-                    <div class="controls-left">
-                        <button id="import-bookmarks" class="btn-secondary">
-                            <i class="fas fa-file-import"></i> 导入
-                        </button>
-                        <button id="add-bookmark" class="btn-primary">
-                            <i class="fas fa-plus"></i> 添加
-                        </button>
-                        <button id="select-all" class="btn-outline">
-                            <i class="far fa-square"></i> 全选
-                        </button>
-                        <button id="delete-selected" class="btn-outline danger" disabled>
-                            <i class="fas fa-trash-alt"></i> 删除选中
-                        </button>
-                    </div>
-                    <div class="controls-right">
-                        <button id="export-bookmarks" class="btn-secondary">
-                            <i class="fas fa-file-export"></i> 导出
-                        </button>
-                    </div>
+                    <h2><i class="fas fa-bookmark"></i> 常用网站</h2>
+                    <p class="section-subtitle">分类整理，快速访问</p>
                 </div>
                 
                 <div class="bookmarks-filters">
                     <button class="filter-btn active" data-folder="all">全部</button>
-                    <button class="filter-btn" data-folder="dev">开发</button>
-                    <button class="filter-btn" data-folder="search">搜索</button>
-                    <button class="filter-btn" data-folder="media">媒体</button>
-                    <button class="filter-btn" data-folder="tools">工具</button>
+                    <button class="filter-btn" data-folder="dev">开发工具</button>
+                    <button class="filter-btn" data-folder="search">搜索引擎</button>
+                    <button class="filter-btn" data-folder="media">媒体娱乐</button>
+                    <button class="filter-btn" data-folder="tools">实用工具</button>
                     <button class="filter-btn" data-folder="other">其他</button>
                 </div>
                 
                 <div class="bookmarks-container">
                     <div class="bookmarks-grid" id="bookmarks-grid">
-                        <!-- 收藏网站将通过JS动态加载 -->
+                        <!-- 收藏网站将通过JS从TXT文件动态加载 -->
+                    </div>
+                    
+                    <div class="bookmarks-loading" id="bookmarks-loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <p>正在加载网站列表...</p>
                     </div>
                     
                     <div class="bookmarks-empty" id="empty-bookmarks">
                         <i class="fas fa-bookmark fa-3x"></i>
-                        <h3>收藏夹为空</h3>
-                        <p>点击"添加"按钮或导入浏览器收藏夹</p>
+                        <h3>暂无网站数据</h3>
+                        <p>无法加载网站列表，请检查网络连接</p>
                     </div>
                 </div>
                 
                 <div class="bookmarks-info compact">
-                    <p><i class="fas fa-info-circle"></i> 提示：点击网站卡片可直接访问，支持多选删除，数据存储在本地浏览器中。</p>
+                    <p><i class="fas fa-info-circle"></i> 提示：点击网站卡片可直接访问，数据来自bookmarks.txt文件。</p>
                 </div>
             </section>
         </div>
     </main>
-    
-    <!-- 添加书签模态框 -->
-    <div class="modal" id="add-bookmark-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-plus-circle"></i> 添加新网站</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <form id="bookmark-form">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="bookmark-name">网站名称</label>
-                            <input type="text" id="bookmark-name" placeholder="例如：GitHub" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="bookmark-folder">分类</label>
-                            <select id="bookmark-folder">
-                                <option value="dev">开发</option>
-                                <option value="search">搜索</option>
-                                <option value="media">媒体</option>
-                                <option value="tools">工具</option>
-                                <option value="other">其他</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label for="bookmark-url">网站地址 (URL)</label>
-                        <input type="url" id="bookmark-url" placeholder="https://example.com" required>
-                    </div>
-                    <div class="form-group">
-                        <label for="bookmark-icon">图标类型</label>
-                        <select id="bookmark-icon">
-                            <option value="fas fa-globe">网站</option>
-                            <option value="fab fa-github">GitHub</option>
-                            <option value="fab fa-google">Google</option>
-                            <option value="fab fa-stack-overflow">Stack Overflow</option>
-                            <option value="fab fa-youtube">YouTube</option>
-                            <option value="fas fa-search">搜索</option>
-                            <option value="fas fa-newspaper">新闻</option>
-                            <option value="fas fa-shopping-cart">购物</option>
-                            <option value="fas fa-video">视频</option>
-                            <option value="fas fa-music">音乐</option>
-                            <option value="fas fa-gamepad">游戏</option>
-                            <option value="fas fa-code">编程</option>
-                        </select>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-outline modal-close">取消</button>
-                <button class="btn-primary" id="save-bookmark">保存网站</button>
-            </div>
-        </div>
-    </div>
-    
-    <!-- 导入收藏夹模态框 -->
-    <div class="modal" id="import-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3><i class="fas fa-file-import"></i> 导入收藏夹</h3>
-                <button class="modal-close">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="import-options">
-                    <div class="import-option">
-                        <h4><i class="fas fa-file-code"></i> 从HTML文件导入</h4>
-                        <p>导入浏览器导出的书签HTML文件</p>
-                        <div class="file-upload">
-                            <input type="file" id="html-import" accept=".html">
-                            <label for="html-import" class="btn-outline">
-                                <i class="fas fa-upload"></i> 选择HTML文件
-                            </label>
-                        </div>
-                    </div>
-                    
-                    <div class="import-option">
-                        <h4><i class="fas fa-code"></i> 从JSON文件导入</h4>
-                        <p>导入之前从本工具导出的JSON文件</p>
-                        <div class="file-upload">
-                            <input type="file" id="json-import" accept=".json">
-                            <label for="json-import" class="btn-outline">
-                                <i class="fas fa-upload"></i> 选择JSON文件
-                            </label>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="import-preview" id="import-preview">
-                    <h4>导入预览 <span id="preview-count">0</span> 个网站</h4>
-                    <div class="preview-list" id="preview-list"></div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn-outline modal-close">取消</button>
-                <button class="btn-primary" id="confirm-import" disabled>导入选中项</button>
-            </div>
-        </div>
-    </div>
     
     <footer>
         <div class="container">

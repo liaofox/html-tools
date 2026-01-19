@@ -23,26 +23,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // 模态框功能
-    const modalCloseBtns = document.querySelectorAll('.modal-close');
-    
-    // 关闭模态框
-    modalCloseBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-            const modal = this.closest('.modal');
-            if (modal) {
-                modal.classList.remove('active');
-            }
-        });
-    });
-    
-    // 点击模态框外部关闭
-    window.addEventListener('click', function(e) {
-        if (e.target.classList.contains('modal')) {
-            e.target.classList.remove('active');
-        }
-    });
-    
     // 页脚链接
     document.getElementById('report-issue').addEventListener('click', function(e) {
         e.preventDefault();
@@ -97,22 +77,22 @@ document.addEventListener('DOMContentLoaded', function() {
     notificationStyle.textContent = `
         .notification {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 12px 16px;
-            border-radius: 8px;
+            top: 15px;
+            right: 15px;
+            padding: 10px 14px;
+            border-radius: 6px;
             color: white;
             font-weight: 500;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             z-index: 10000;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
             transform: translateX(100%);
             opacity: 0;
             transition: transform 0.3s ease, opacity 0.3s ease;
-            max-width: 300px;
-            font-size: 0.9rem;
+            max-width: 280px;
+            font-size: 0.85rem;
         }
         
         .notification.show {
