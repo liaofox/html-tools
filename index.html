@@ -3,111 +3,444 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HTML小工具集合</title>
+    <title>工具集合站 | 实用工具大全</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔧</text></svg>">
 </head>
 <body>
     <header>
         <div class="container">
-            <h1><i class="fas fa-tools"></i> HTML小工具集合</h1>
-            <p class="subtitle">简单实用的网页工具，无需安装，在线使用</p>
+            <h1><i class="fas fa-tools"></i> 工具集合站</h1>
+            <p>一站式实用工具集合，提高工作效率</p>
         </div>
     </header>
 
     <main class="container">
-        <section class="intro">
-            <p>这个页面收集了各种实用的HTML小工具，所有工具都直接在浏览器中运行，无需服务器支持，保护你的隐私。</p>
-        </section>
-
-        <section class="tools-grid">
-            <!-- 计算器 -->
-            <div class="tool-card">
-                <div class="tool-icon">
-                    <i class="fas fa-calculator"></i>
+        <div class="layout">
+            <!-- 左侧工具集合 -->
+            <section class="tools-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-wrench"></i> 工具集合</h2>
+                    <p class="section-subtitle">点击下方标签切换工具</p>
                 </div>
-                <h3>科学计算器</h3>
-                <p>支持基本运算和科学计算功能的计算器</p>
-                <a href="tools/calculator.html" class="tool-link">使用工具</a>
-            </div>
-
-            <!-- 颜色选择器 -->
-            <div class="tool-card">
-                <div class="tool-icon">
-                    <i class="fas fa-palette"></i>
+                
+                <div class="tools-tabs">
+                    <button class="tab-btn active" data-tab="amount-converter">
+                        <i class="fas fa-money-bill-wave"></i> 金额转大写
+                    </button>
+                    <button class="tab-btn" data-tab="calculator">
+                        <i class="fas fa-calculator"></i> 科学计算器
+                    </button>
+                    <button class="tab-btn" data-tab="more-tools">
+                        <i class="fas fa-plus"></i> 更多工具
+                    </button>
                 </div>
-                <h3>颜色选择器</h3>
-                <p>选择颜色并获取HEX、RGB、HSL值</p>
-                <a href="tools/color-picker.html" class="tool-link">使用工具</a>
-            </div>
-
-            <!-- 单位换算器 -->
-            <div class="tool-card">
-                <div class="tool-icon">
-                    <i class="fas fa-ruler-combined"></i>
+                
+                <!-- 金额转大写工具 -->
+                <div class="tool-content active" id="amount-converter">
+                    <div class="tool-description">
+                        <h3><i class="fas fa-exchange-alt"></i> 人民币金额转大写</h3>
+                        <p>输入数值金额，实时转换为中文大写金额格式（如：1234.56 → 壹仟贰佰叁拾肆元伍角陆分）</p>
+                    </div>
+                    
+                    <div class="converter-container">
+                        <div class="input-group">
+                            <label for="amount-input"><i class="fas fa-keyboard"></i> 输入金额</label>
+                            <div class="input-wrapper">
+                                <span class="input-prefix">¥</span>
+                                <input type="text" id="amount-input" placeholder="请输入金额，如：1234.56">
+                                <button id="clear-amount" class="clear-btn" title="清空">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="input-hint">
+                                <span id="input-status">等待输入...</span>
+                                <span id="char-count">0 位</span>
+                            </div>
+                        </div>
+                        
+                        <div class="converter-result">
+                            <label for="chinese-output"><i class="fas fa-language"></i> 中文大写金额</label>
+                            <div class="output-wrapper">
+                                <textarea id="chinese-output" readonly placeholder="大写金额将显示在这里"></textarea>
+                                <button id="copy-result" class="copy-btn" title="复制结果">
+                                    <i class="far fa-copy"></i>
+                                </button>
+                            </div>
+                            <div class="output-hint">
+                                <span id="output-status">结果将实时显示</span>
+                                <button id="clear-history" class="text-btn">
+                                    <i class="fas fa-trash-alt"></i> 清空记录
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="conversion-history">
+                            <h4><i class="fas fa-history"></i> 转换历史 <span id="history-count">0</span></h4>
+                            <div class="history-list" id="history-list">
+                                <div class="history-empty">
+                                    <i class="far fa-clock"></i>
+                                    <p>暂无转换记录</p>
+                                    <p class="small-text">输入金额后，历史记录将显示在这里</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <h3>单位换算器</h3>
-                <p>长度、重量、温度等单位换算</p>
-                <a href="tools/unit-converter.html" class="tool-link">使用工具</a>
-            </div>
-
-            <!-- 文本格式化 -->
-            <div class="tool-card">
-                <div class="tool-icon">
-                    <i class="fas fa-text-height"></i>
+                
+                <!-- 科学计算器 -->
+                <div class="tool-content" id="calculator">
+                    <div class="tool-description">
+                        <h3><i class="fas fa-calculator"></i> 科学计算器</h3>
+                        <p>功能全面的科学计算器，支持基本运算、三角函数、对数、指数等科学计算功能</p>
+                    </div>
+                    
+                    <div class="calculator-container">
+                        <div class="calculator-display">
+                            <div class="calc-expression" id="calc-expression"></div>
+                            <div class="calc-input" id="calc-input">0</div>
+                        </div>
+                        
+                        <div class="calculator-buttons">
+                            <div class="calc-row">
+                                <button class="calc-btn func-btn" data-action="clear">C</button>
+                                <button class="calc-btn func-btn" data-action="backspace">
+                                    <i class="fas fa-backspace"></i>
+                                </button>
+                                <button class="calc-btn func-btn" data-action="percent">%</button>
+                                <button class="calc-btn op-btn" data-action="divide">÷</button>
+                            </div>
+                            <div class="calc-row">
+                                <button class="calc-btn sci-btn" data-action="sin">sin</button>
+                                <button class="calc-btn sci-btn" data-action="cos">cos</button>
+                                <button class="calc-btn sci-btn" data-action="tan">tan</button>
+                                <button class="calc-btn op-btn" data-action="multiply">×</button>
+                            </div>
+                            <div class="calc-row">
+                                <button class="calc-btn sci-btn" data-action="log">log</button>
+                                <button class="calc-btn sci-btn" data-action="ln">ln</button>
+                                <button class="calc-btn sci-btn" data-action="sqrt">√</button>
+                                <button class="calc-btn op-btn" data-action="subtract">-</button>
+                            </div>
+                            <div class="calc-row">
+                                <button class="calc-btn num-btn" data-number="7">7</button>
+                                <button class="calc-btn num-btn" data-number="8">8</button>
+                                <button class="calc-btn num-btn" data-number="9">9</button>
+                                <button class="calc-btn op-btn" data-action="add" style="grid-row: span 2;">+</button>
+                            </div>
+                            <div class="calc-row">
+                                <button class="calc-btn num-btn" data-number="4">4</button>
+                                <button class="calc-btn num-btn" data-number="5">5</button>
+                                <button class="calc-btn num-btn" data-number="6">6</button>
+                            </div>
+                            <div class="calc-row">
+                                <button class="calc-btn num-btn" data-number="1">1</button>
+                                <button class="calc-btn num-btn" data-number="2">2</button>
+                                <button class="calc-btn num-btn" data-number="3">3</button>
+                                <button class="calc-btn op-btn" data-action="equals" style="grid-row: span 2;">=</button>
+                            </div>
+                            <div class="calc-row">
+                                <button class="calc-btn num-btn" data-number="0" style="grid-column: span 2;">0</button>
+                                <button class="calc-btn" data-action="decimal">.</button>
+                            </div>
+                            <div class="calc-row">
+                                <button class="calc-btn sci-btn" data-action="power">x^y</button>
+                                <button class="calc-btn sci-btn" data-action="pi">π</button>
+                                <button class="calc-btn sci-btn" data-action="e">e</button>
+                                <button class="calc-btn func-btn" data-action="toggle-mode">
+                                    <i class="fas fa-sun" id="mode-icon"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="calculator-notes">
+                            <h4><i class="fas fa-lightbulb"></i> 使用说明</h4>
+                            <ul>
+                                <li>点击数字和运算符进行基本计算</li>
+                                <li>使用科学函数按钮进行高级计算</li>
+                                <li>C 键清除所有输入，← 键删除最后一位</li>
+                                <li>点击右上角图标切换亮色/暗色模式</li>
+                            </ul>
+                        </div>
+                    </div>
                 </div>
-                <h3>文本格式化</h3>
-                <p>文本大小写转换、去空格、字数统计</p>
-                <a href="tools/text-formatter.html" class="tool-link">使用工具</a>
-            </div>
-
-            <!-- 更多工具占位 -->
-            <div class="tool-card coming-soon">
-                <div class="tool-icon">
-                    <i class="fas fa-plus"></i>
+                
+                <!-- 更多工具（占位） -->
+                <div class="tool-content" id="more-tools">
+                    <div class="coming-soon">
+                        <i class="fas fa-tools fa-3x"></i>
+                        <h3>更多工具即将上线</h3>
+                        <p>我们正在开发更多实用工具，敬请期待！</p>
+                        <div class="tool-suggestions">
+                            <h4><i class="fas fa-lightbulb"></i> 计划中的工具</h4>
+                            <div class="suggestion-list">
+                                <div class="suggestion-item">
+                                    <i class="fas fa-calendar-alt"></i>
+                                    <span>日期计算器</span>
+                                </div>
+                                <div class="suggestion-item">
+                                    <i class="fas fa-ruler-combined"></i>
+                                    <span>单位换算器</span>
+                                </div>
+                                <div class="suggestion-item">
+                                    <i class="fas fa-palette"></i>
+                                    <span>颜色选择器</span>
+                                </div>
+                                <div class="suggestion-item">
+                                    <i class="fas fa-code"></i>
+                                    <span>代码格式化</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <h3>更多工具</h3>
-                <p>正在开发中...</p>
-                <button class="tool-link" disabled>即将推出</button>
-            </div>
-        </section>
-
-        <section class="features">
-            <h2><i class="fas fa-star"></i> 特点</h2>
-            <div class="features-list">
-                <div class="feature">
-                    <i class="fas fa-shield-alt"></i>
-                    <h4>隐私保护</h4>
-                    <p>所有工具都在本地运行，不收集任何数据</p>
+            </section>
+            
+            <!-- 右侧网站收藏夹 -->
+            <section class="bookmarks-section">
+                <div class="section-header">
+                    <h2><i class="fas fa-bookmark"></i> 网站收藏夹</h2>
+                    <p class="section-subtitle">管理您常用的网站链接</p>
                 </div>
-                <div class="feature">
-                    <i class="fas fa-bolt"></i>
-                    <h4>快速响应</h4>
-                    <p>无需加载，即时使用</p>
+                
+                <div class="bookmarks-controls">
+                    <button id="import-bookmarks" class="btn-primary">
+                        <i class="fas fa-file-import"></i> 导入收藏夹
+                    </button>
+                    <button id="add-bookmark" class="btn-secondary">
+                        <i class="fas fa-plus"></i> 添加网站
+                    </button>
+                    <button id="export-bookmarks" class="btn-outline">
+                        <i class="fas fa-file-export"></i> 导出
+                    </button>
                 </div>
-                <div class="feature">
-                    <i class="fas fa-mobile-alt"></i>
-                    <h4>响应式设计</h4>
-                    <p>在手机和电脑上都能完美显示</p>
+                
+                <div class="bookmarks-container">
+                    <div class="bookmarks-list" id="bookmarks-list">
+                        <!-- 默认收藏网站 -->
+                        <div class="bookmark-item">
+                            <div class="bookmark-icon">
+                                <i class="fab fa-github"></i>
+                            </div>
+                            <div class="bookmark-content">
+                                <h4>GitHub</h4>
+                                <p>代码托管平台</p>
+                                <a href="https://github.com" target="_blank">https://github.com</a>
+                            </div>
+                            <div class="bookmark-actions">
+                                <button class="bookmark-btn" title="编辑">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="bookmark-btn delete" title="删除">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bookmark-item">
+                            <div class="bookmark-icon">
+                                <i class="fab fa-google"></i>
+                            </div>
+                            <div class="bookmark-content">
+                                <h4>Google</h4>
+                                <p>搜索引擎</p>
+                                <a href="https://google.com" target="_blank">https://google.com</a>
+                            </div>
+                            <div class="bookmark-actions">
+                                <button class="bookmark-btn" title="编辑">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="bookmark-btn delete" title="删除">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bookmark-item">
+                            <div class="bookmark-icon">
+                                <i class="fab fa-stack-overflow"></i>
+                            </div>
+                            <div class="bookmark-content">
+                                <h4>Stack Overflow</h4>
+                                <p>编程问答社区</p>
+                                <a href="https://stackoverflow.com" target="_blank">https://stackoverflow.com</a>
+                            </div>
+                            <div class="bookmark-actions">
+                                <button class="bookmark-btn" title="编辑">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="bookmark-btn delete" title="删除">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bookmark-item">
+                            <div class="bookmark-icon">
+                                <i class="fab fa-mdn"></i>
+                            </div>
+                            <div class="bookmark-content">
+                                <h4>MDN Web Docs</h4>
+                                <p>Web技术文档</p>
+                                <a href="https://developer.mozilla.org" target="_blank">https://developer.mozilla.org</a>
+                            </div>
+                            <div class="bookmark-actions">
+                                <button class="bookmark-btn" title="编辑">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="bookmark-btn delete" title="删除">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="bookmark-item">
+                            <div class="bookmark-icon">
+                                <i class="fab fa-youtube"></i>
+                            </div>
+                            <div class="bookmark-content">
+                                <h4>YouTube</h4>
+                                <p>视频分享平台</p>
+                                <a href="https://youtube.com" target="_blank">https://youtube.com</a>
+                            </div>
+                            <div class="bookmark-actions">
+                                <button class="bookmark-btn" title="编辑">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="bookmark-btn delete" title="删除">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bookmarks-empty" id="empty-bookmarks">
+                        <i class="fas fa-bookmark fa-3x"></i>
+                        <h3>收藏夹为空</h3>
+                        <p>点击"添加网站"按钮或导入浏览器收藏夹</p>
+                    </div>
                 </div>
-                <div class="feature">
-                    <i class="fas fa-code"></i>
-                    <h4>开源免费</h4>
-                    <p>代码完全开源，可自由修改</p>
+                
+                <div class="bookmarks-info">
+                    <h4><i class="fas fa-info-circle"></i> 使用提示</h4>
+                    <ul>
+                        <li>点击网站卡片可直接访问对应网站</li>
+                        <li>支持导入浏览器导出的HTML书签文件</li>
+                        <li>数据存储在本地浏览器中，不会上传到服务器</li>
+                        <li>导出功能可将收藏夹备份为JSON文件</li>
+                    </ul>
                 </div>
-            </div>
-        </section>
+            </section>
+        </div>
     </main>
-
+    
+    <!-- 添加书签模态框 -->
+    <div class="modal" id="add-bookmark-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> 添加新网站</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form id="bookmark-form">
+                    <div class="form-group">
+                        <label for="bookmark-name">网站名称</label>
+                        <input type="text" id="bookmark-name" placeholder="例如：GitHub" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookmark-url">网站地址 (URL)</label>
+                        <input type="url" id="bookmark-url" placeholder="https://example.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookmark-description">描述 (可选)</label>
+                        <textarea id="bookmark-description" placeholder="简要描述该网站的作用..."></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="bookmark-icon">图标类型</label>
+                        <select id="bookmark-icon">
+                            <option value="fas fa-globe">网站</option>
+                            <option value="fab fa-github">GitHub</option>
+                            <option value="fab fa-google">Google</option>
+                            <option value="fas fa-search">搜索</option>
+                            <option value="fas fa-newspaper">新闻</option>
+                            <option value="fas fa-shopping-cart">购物</option>
+                            <option value="fas fa-video">视频</option>
+                            <option value="fas fa-music">音乐</option>
+                            <option value="fas fa-gamepad">游戏</option>
+                            <option value="fas fa-code">编程</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline modal-close">取消</button>
+                <button class="btn-primary" id="save-bookmark">保存网站</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 导入收藏夹模态框 -->
+    <div class="modal" id="import-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-file-import"></i> 导入收藏夹</h3>
+                <button class="modal-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="import-options">
+                    <div class="import-option">
+                        <h4><i class="fas fa-file-code"></i> 从HTML文件导入</h4>
+                        <p>导入浏览器导出的书签HTML文件</p>
+                        <div class="file-upload">
+                            <input type="file" id="html-import" accept=".html">
+                            <label for="html-import" class="btn-outline">
+                                <i class="fas fa-upload"></i> 选择HTML文件
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="import-option">
+                        <h4><i class="fas fa-code"></i> 从JSON文件导入</h4>
+                        <p>导入之前从本工具导出的JSON文件</p>
+                        <div class="file-upload">
+                            <input type="file" id="json-import" accept=".json">
+                            <label for="json-import" class="btn-outline">
+                                <i class="fas fa-upload"></i> 选择JSON文件
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="import-option">
+                        <h4><i class="fas fa-keyboard"></i> 手动输入URL</h4>
+                        <p>每行输入一个URL，格式：名称|URL|描述(可选)</p>
+                        <textarea id="manual-import" placeholder="GitHub|https://github.com|代码托管平台&#10;Google|https://google.com|搜索引擎"></textarea>
+                    </div>
+                </div>
+                
+                <div class="import-preview" id="import-preview">
+                    <h4>导入预览 <span id="preview-count">0</span> 个网站</h4>
+                    <div class="preview-list" id="preview-list"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-outline modal-close">取消</button>
+                <button class="btn-primary" id="confirm-import" disabled>导入选中项</button>
+            </div>
+        </div>
+    </div>
+    
     <footer>
         <div class="container">
-            <p>© 2023 HTML小工具集合 | 由 <a href="https://github.com/yourusername" target="_blank">你的GitHub用户名</a> 创建</p>
-            <p class="github-link">
-                <i class="fab fa-github"></i>
-                <a href="https://github.com/yourusername/html-tools" target="_blank">在GitHub上查看源代码</a>
+            <p>工具集合站 © 2023 - 使用纯HTML/CSS/JavaScript构建</p>
+            <p class="footer-links">
+                <a href="https://github.com" target="_blank">GitHub</a> | 
+                <a href="#" id="report-issue">反馈问题</a> | 
+                <a href="#" id="view-source">查看源码</a>
             </p>
         </div>
     </footer>
+    
+    <script src="script.js"></script>
 </body>
 </html>
