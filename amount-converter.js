@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const group = numStr.slice(start, end);
                 
                 let groupResult = '';
-                for (let j = 0; j < group.length; j++) {
+                for (let j = 0; j <group.length; j++) {
                     const digit = parseInt(group[j]);
                     const position = group.length - j - 1;
                     
@@ -250,8 +250,8 @@ document.addEventListener('DOMContentLoaded', function() {
         conversionHistory.unshift(record);
         
         // 限制历史记录数量
-        if (conversionHistory.length > 10) {
-            conversionHistory = conversionHistory.slice(0, 10);
+        if (conversionHistory.length > 15) {
+            conversionHistory = conversionHistory.slice(0, 15);
         }
         
         // 保存到sessionStorage

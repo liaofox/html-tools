@@ -42,14 +42,14 @@ body {
 header {
     background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
     color: white;
-    padding: 1.2rem 0;
+    padding: 1rem 0;
     text-align: center;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    margin-bottom: 1.2rem;
+    margin-bottom: 1rem;
 }
 
 header h1 {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
     margin-bottom: 0.3rem;
     display: flex;
     align-items: center;
@@ -58,7 +58,7 @@ header h1 {
 }
 
 header p {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     opacity: 0.9;
 }
 
@@ -66,8 +66,9 @@ header p {
 .layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1.2rem;
+    gap: 1rem;
     margin-bottom: 1.5rem;
+    align-items: start; /* 确保两列顶部对齐 */
 }
 
 @media (max-width: 1100px) {
@@ -84,7 +85,7 @@ header p {
 }
 
 .section-header h2 {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
     color: var(--primary-color);
     display: flex;
     align-items: center;
@@ -93,7 +94,7 @@ header p {
 
 .section-subtitle {
     color: var(--gray-color);
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     margin-top: 2px;
 }
 
@@ -138,15 +139,19 @@ header p {
     border-radius: var(--border-radius);
     padding: 1rem;
     box-shadow: var(--box-shadow);
-    margin-bottom: 1rem;
+    margin-bottom: 0;
+    height: 100%; /* 确保工具区域高度撑满 */
+    display: flex;
+    flex-direction: column;
 }
 
 .tool-content.active {
-    display: block;
+    display: flex;
 }
 
 .tool-description {
     margin-bottom: 1rem;
+    flex-shrink: 0;
 }
 
 .tool-description h3 {
@@ -168,12 +173,15 @@ header p {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    flex: 1;
+    min-height: 0; /* 允许内容收缩 */
 }
 
 .input-group, .converter-result {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
+    flex-shrink: 0;
 }
 
 .input-group label, .converter-result label {
@@ -200,16 +208,47 @@ header p {
     font-size: 0.9rem;
 }
 
-.input-wrapper input, .output-wrapper textarea {
+.input-wrapper input {
     width: 100%;
     padding: 10px 10px 10px 30px;
     border: 1px solid var(--light-gray);
     border-radius: var(--border-radius);
     font-size: 0.9rem;
     transition: var(--transition);
+    -webkit-appearance: none;
+    -moz-appearance: textfield;
 }
 
-.input-wrapper input:focus, .output-wrapper textarea:focus {
+/* 修复键盘输入问题 */
+.input-wrapper input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.1);
+}
+
+/* 移除数字输入框的上下箭头 */
+.input-wrapper input::-webkit-outer-spin-button,
+.input-wrapper input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.output-wrapper textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 10px 30px 10px 10px;
+    border: 1px solid var(--light-gray);
+    border-radius: var(--border-radius);
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--primary-dark);
+    background-color: #f8f9ff;
+    font-family: 'Microsoft YaHei', sans-serif;
+    resize: none;
+    transition: var(--transition);
+}
+
+.output-wrapper textarea:focus {
     outline: none;
     border-color: var(--primary-color);
     box-shadow: 0 0 0 2px rgba(67, 97, 238, 0.1);
@@ -226,21 +265,11 @@ header p {
     cursor: pointer;
     font-size: 0.9rem;
     transition: var(--transition);
+    padding: 4px;
 }
 
 .clear-btn:hover, .copy-btn:hover {
     color: var(--primary-color);
-}
-
-.output-wrapper textarea {
-    resize: none;
-    min-height: 80px;
-    padding-right: 30px;
-    font-size: 1rem;
-    line-height: 1.5;
-    color: var(--primary-dark);
-    background-color: #f8f9ff;
-    font-family: 'Microsoft YaHei', sans-serif;
 }
 
 .input-hint, .output-hint {
@@ -248,6 +277,7 @@ header p {
     justify-content: space-between;
     font-size: 0.8rem;
     color: var(--gray-color);
+    flex-shrink: 0;
 }
 
 .text-btn {
@@ -259,6 +289,7 @@ header p {
     display: flex;
     align-items: center;
     gap: 3px;
+    padding: 0;
 }
 
 .text-btn:hover {
@@ -272,6 +303,10 @@ header p {
     padding: 0.8rem;
     border: 1px solid var(--light-gray);
     margin-top: 0.5rem;
+    flex: 1;
+    min-height: 0; /* 允许内容收缩 */
+    display: flex;
+    flex-direction: column;
 }
 
 .conversion-history h4 {
@@ -281,6 +316,7 @@ header p {
     margin-bottom: 0.6rem;
     font-size: 0.9rem;
     color: var(--primary-color);
+    flex-shrink: 0;
 }
 
 #history-count {
@@ -291,9 +327,16 @@ header p {
     border-radius: 8px;
 }
 
+.history-list-container {
+    flex: 1;
+    min-height: 0; /* 允许内容收缩 */
+    overflow: hidden; /* 确保内部滚动 */
+}
+
 .history-list {
-    max-height: 180px;
+    height: 100%;
     overflow-y: auto;
+    max-height: 300px; /* 固定最大高度 */
 }
 
 .history-item {
@@ -314,6 +357,7 @@ header p {
     flex-direction: column;
     gap: 2px;
     flex: 1;
+    min-width: 0; /* 允许内容收缩 */
 }
 
 .history-amount {
@@ -338,12 +382,18 @@ header p {
     color: var(--gray-color);
     white-space: nowrap;
     margin-left: 8px;
+    flex-shrink: 0;
 }
 
 .history-empty {
     text-align: center;
     padding: 1.2rem 1rem;
     color: var(--gray-color);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
 .history-empty i {
@@ -358,185 +408,13 @@ header p {
     color: #999;
 }
 
-/* 科学计算器 - 垂直布局 */
-.calculator-container-vertical {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-}
-
-.calculator-top {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-}
-
-.calculator-display {
-    background-color: #1a1a2e;
-    color: white;
-    border-radius: var(--border-radius);
-    padding: 1rem;
-    text-align: right;
-    font-family: 'Courier New', monospace;
-    box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
-    min-height: 80px;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-.calc-expression {
-    min-height: 18px;
-    font-size: 0.85rem;
-    color: #aaa;
-    margin-bottom: 6px;
-    overflow-x: auto;
-    white-space: nowrap;
-}
-
-.calc-input {
-    font-size: 1.6rem;
-    font-weight: bold;
-    overflow-x: auto;
-    white-space: nowrap;
-    word-break: break-all;
-}
-
-.calculator-history {
-    background-color: #f0f7ff;
-    border-radius: var(--border-radius);
-    padding: 0.8rem;
-    border: 1px solid #cce5ff;
-    max-height: 150px;
-    display: flex;
-    flex-direction: column;
-}
-
-.calculator-history h4 {
-    color: var(--primary-color);
-    font-size: 0.9rem;
-    margin-bottom: 0.6rem;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-#calc-history-count {
-    background-color: var(--primary-color);
-    color: white;
-    font-size: 0.65rem;
-    padding: 1px 5px;
-    border-radius: 8px;
-}
-
-.calc-history-list {
-    flex: 1;
-    overflow-y: auto;
-    font-size: 0.85rem;
-}
-
-.calc-history-item {
-    padding: 5px 6px;
-    border-bottom: 1px solid #d9e7ff;
-    font-family: 'Courier New', monospace;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.calc-history-item:last-child {
-    border-bottom: none;
-}
-
-.calc-history-expression {
-    color: var(--gray-color);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    flex: 1;
-    font-size: 0.85rem;
-}
-
-.calc-history-result {
-    color: var(--primary-color);
-    font-weight: 600;
-    margin-left: 8px;
-    white-space: nowrap;
-    font-size: 0.85rem;
-}
-
-.calculator-buttons {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 6px;
-}
-
-.calc-row {
-    display: contents;
-}
-
-.calc-btn {
-    padding: 12px 6px;
-    border: none;
-    border-radius: 4px;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: var(--transition);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.calc-btn:active {
-    transform: scale(0.95);
-}
-
-.num-btn {
-    background-color: white;
-    color: var(--dark-color);
-    border: 1px solid var(--light-gray);
-}
-
-.num-btn:hover {
-    background-color: #f0f0f0;
-    border-color: #ccc;
-}
-
-.op-btn {
-    background-color: var(--primary-color);
-    color: white;
-}
-
-.op-btn:hover {
-    background-color: var(--primary-dark);
-}
-
-.func-btn {
-    background-color: var(--warning-color);
-    color: white;
-}
-
-.func-btn:hover {
-    background-color: #e68a19;
-}
-
-.sci-btn {
-    background-color: var(--secondary-color);
-    color: white;
-    font-size: 0.85rem;
-}
-
-.sci-btn:hover {
-    background-color: #611a9e;
-}
-
 /* 网站收藏夹 */
 .bookmarks-filters {
     display: flex;
     gap: 5px;
     margin-bottom: 0.8rem;
     flex-wrap: wrap;
+    flex-shrink: 0;
 }
 
 .filter-btn {
@@ -561,22 +439,33 @@ header p {
     border-color: var(--primary-color);
 }
 
+.bookmarks-section {
+    display: flex;
+    flex-direction: column;
+    height: 100%; /* 确保右侧高度与左侧一致 */
+}
+
 .bookmarks-container {
     background-color: white;
     border-radius: var(--border-radius);
     padding: 0.8rem;
     box-shadow: var(--box-shadow);
-    margin-bottom: 0.8rem;
-    min-height: 500px;
-    max-height: 600px;
-    overflow-y: auto;
+    flex: 1; /* 占据剩余空间 */
+    min-height: 0; /* 允许内容收缩 */
+    overflow: hidden; /* 确保内部滚动 */
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .bookmarks-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    gap: 6px;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    align-content: start; /* 从顶部开始排列 */
 }
 
 @media (max-width: 768px) {
@@ -585,6 +474,7 @@ header p {
     }
 }
 
+/* 网址卡片 - 紧凑设计 */
 .bookmark-item {
     background-color: white;
     border-radius: var(--border-radius);
@@ -596,6 +486,8 @@ header p {
     align-items: flex-start;
     text-decoration: none;
     color: inherit;
+    height: 56px; /* 固定高度，大约两行文字 */
+    overflow: hidden; /* 隐藏超出部分 */
 }
 
 .bookmark-item:hover {
@@ -607,15 +499,14 @@ header p {
 }
 
 .bookmark-icon {
-    width: 32px;
-    height: 32px;
+    width: 40px;
+    height: 40px;
     background-color: #f0f5ff;
     border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    margin-top: 1px;
 }
 
 .bookmark-icon i {
@@ -624,29 +515,23 @@ header p {
 }
 
 .bookmark-content {
-    flex-grow: 1;
+    flex: 1;
     min-width: 0;
+    display: flex;
+    flex-direction: column;
+    height: 40px; /* 与图标高度一致 */
+    justify-content: space-between; /* 均匀分布内容 */
 }
 
 .bookmark-content h4 {
     color: var(--dark-color);
     font-size: 0.85rem;
-    margin-bottom: 2px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     font-weight: 600;
     line-height: 1.2;
-}
-
-.bookmark-content p {
-    color: var(--gray-color);
-    font-size: 0.75rem;
-    margin-bottom: 4px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    line-height: 1.2;
+    margin: 0;
 }
 
 .bookmark-url {
@@ -656,8 +541,8 @@ header p {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    display: block;
     line-height: 1.2;
+    display: block;
 }
 
 .bookmark-folder {
@@ -667,8 +552,15 @@ header p {
     background-color: #f0f0f0;
     color: var(--gray-color);
     border-radius: 8px;
-    margin-top: 4px;
     line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 80px;
+}
+
+.bookmark-description {
+    display: none; /* 不显示描述，节省空间 */
 }
 
 .bookmarks-loading {
@@ -676,6 +568,11 @@ header p {
     padding: 3rem 1rem;
     color: var(--gray-color);
     grid-column: span 2;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
 }
 
 .bookmarks-loading i {
@@ -693,6 +590,11 @@ header p {
     padding: 3rem 1rem;
     color: var(--gray-color);
     grid-column: span 2;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
     display: none;
 }
 
@@ -720,6 +622,8 @@ header p {
     font-size: 0.8rem;
     color: var(--gray-color);
     line-height: 1.3;
+    margin-top: 0.8rem;
+    flex-shrink: 0;
 }
 
 .bookmarks-info.compact p {
@@ -738,7 +642,7 @@ footer {
     margin-top: auto;
     background-color: var(--dark-color);
     color: white;
-    padding: 1.2rem 0;
+    padding: 1rem 0;
     text-align: center;
     font-size: 0.85rem;
 }
@@ -783,24 +687,23 @@ footer p {
 /* 响应式调整 */
 @media (max-width: 768px) {
     header h1 {
-        font-size: 1.6rem;
+        font-size: 1.5rem;
     }
     
     .tools-tabs {
         justify-content: center;
     }
     
-    .calculator-buttons {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 5px;
+    .bookmark-item {
+        height: 60px; /* 移动端稍高一点 */
     }
     
-    .calc-btn {
-        padding: 10px 5px;
-        font-size: 0.9rem;
+    .bookmark-icon {
+        width: 36px;
+        height: 36px;
     }
     
-    .sci-btn {
-        font-size: 0.75rem;
+    .bookmark-content {
+        height: 36px;
     }
 }

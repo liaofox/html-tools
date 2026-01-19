@@ -1,4 +1,4 @@
-// 网站收藏夹功能 - 从TXT文件读取
+// 网站收藏夹功能 - 从CSV文件读取
 
 document.addEventListener('DOMContentLoaded', function() {
     // 收藏夹元素
@@ -10,31 +10,31 @@ document.addEventListener('DOMContentLoaded', function() {
     // 分类文件夹映射
     const folderNames = {
         'all': '全部',
-        'dev': '开发工具',
-        'search': '搜索引擎',
-        'media': '媒体娱乐',
-        'tools': '实用工具',
-        'other': '其他'
+        '开发': '开发工具',
+        '搜索': '搜索引擎',
+        '媒体': '媒体娱乐',
+        '工具': '实用工具',
+        '学习': '学习资源'
     };
     
     let bookmarks = [];
     let currentFolder = 'all';
     
-    // 从TXT文件加载书签
-    async function loadBookmarksFromTxt() {
+    // 从CSV文件加载书签
+    async function loadBookmarksFromCSV() {
         try {
             bookmarksLoading.style.display = 'block';
             emptyBookmarks.style.display = 'none';
             bookmarksGrid.innerHTML = '';
             
-            // 尝试从bookmarks.txt文件加载
-            const response = await fetch('bookmarks.txt');
+            // 尝试从bookmarks.csv文件加载
+            const response = await fetch('bookmarks.csv');
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
             
             const text = await response.text();
-            bookmarks = parseBookmarksTxt(text);
+            bookmarks = parseBookmarksCSV(text);
             
             // 渲染收藏夹
             renderBookmarks();
@@ -56,51 +56,62 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // 解析TXT文件
-    function parseBookmarksTxt(text) {
+    // 解析CSV文件
+    function parseBookmarksCSV(text) {
         const lines = text.split('\n');
         const bookmarks = [];
-        let currentCategory = '';
         
-        lines.forEach((line, index) => {
-            line = line.trim();
+        // 解析CSV头部
+        const headers = lines[0]?.split(',').map(h => h.trim()) || [];
+        
+        // 检查必要的列
+        const nameIndex = headers.indexOf('名称');
+        const urlIndex = headers.indexOf('网址');
+        const iconIndex = headers.indexOf('图标');
+        const folderIndex = headers.indexOf('分类');
+        
+        if (nameIndex === -1 || urlIndex === -1) {
+            console.error('CSV文件格式不正确，缺少必要列');
+            return [];
+        }
+        
+        // 解析数据行
+        for (let i = 1; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
             
-            // 跳过空行和注释
-            if (!line || line.startsWith('#')) {
-                return;
-            }
+            // 简单的CSV解析（不处理引号和转义）
+            const cells = line.split(',');
+            if (cells.length < 2) continue;
             
-            // 检查是否为分类标题
-            if (line.startsWith('[') && line.endsWith(']')) {
-                currentCategory = line.slice(1, -1);
-                return;
-            }
+            const name = cells[nameIndex]?.trim() || '';
+            const url = cells[urlIndex]?.trim() || '';
+            const icon = iconIndex !== -1 ? cells[iconIndex]?.trim() || 'fas fa-globe' : 'fas fa-globe';
+            const folder = folderIndex !== -1 ? cells[folderIndex]?.trim() || '其他' : '其他';
+            const description = headers.includes('描述') && cells[headers.indexOf('描述')] ? cells[headers.indexOf('描述')].trim() : '';
             
-            // 解析书签行
-            const parts = line.split('|');
-            if (parts.length >= 2) {
-                const name = parts[0].trim();
-                const url = parts[1].trim();
-                const icon = parts[2] ? parts[2].trim() : 'fas fa-globe';
-                const folder = parts[3] ? parts[3].trim() : 'other';
-                
-                // 验证URL
-                try {
-                    new URL(url);
-                    
-                    bookmarks.push({
-                        id: Date.now() + index,
-                        name,
-                        url,
-                        icon,
-                        folder,
-                        category: currentCategory
-                    });
-                } catch (e) {
-                    console.warn(`无效的URL: ${url}`, e);
+            // 验证URL
+            try {
+                // 如果URL没有协议，添加https://
+                let fullUrl = url;
+                if (url && !url.startsWith('http://') && !url.startsWith('https://')) {
+                    fullUrl = 'https://' + url;
                 }
+                
+                new URL(fullUrl);
+                
+                bookmarks.push({
+                    id: Date.now() + i,
+                    name,
+                    url: fullUrl,
+                    icon,
+                    folder,
+                    description
+                });
+            } catch (e) {
+                console.warn(`无效的URL: ${url}`, e);
             }
-        });
+        }
         
         return bookmarks;
     }
@@ -113,64 +124,64 @@ document.addEventListener('DOMContentLoaded', function() {
                 name: 'GitHub',
                 url: 'https://github.com',
                 icon: 'fab fa-github',
-                folder: 'dev',
-                category: '开发工具'
+                folder: '开发',
+                description: '代码托管平台'
             },
             {
                 id: 2,
                 name: 'Google',
                 url: 'https://google.com',
                 icon: 'fab fa-google',
-                folder: 'search',
-                category: '搜索引擎'
+                folder: '搜索',
+                description: '搜索引擎'
             },
             {
                 id: 3,
                 name: 'Stack Overflow',
                 url: 'https://stackoverflow.com',
                 icon: 'fab fa-stack-overflow',
-                folder: 'dev',
-                category: '开发工具'
+                folder: '开发',
+                description: '编程问答社区'
             },
             {
                 id: 4,
                 name: 'YouTube',
                 url: 'https://youtube.com',
                 icon: 'fab fa-youtube',
-                folder: 'media',
-                category: '媒体娱乐'
+                folder: '媒体',
+                description: '视频分享平台'
             },
             {
                 id: 5,
                 name: 'MDN Web Docs',
                 url: 'https://developer.mozilla.org',
                 icon: 'fab fa-mdn',
-                folder: 'dev',
-                category: '开发工具'
+                folder: '开发',
+                description: 'Web技术文档'
             },
             {
                 id: 6,
                 name: 'Bing',
                 url: 'https://bing.com',
                 icon: 'fab fa-microsoft',
-                folder: 'search',
-                category: '搜索引擎'
+                folder: '搜索',
+                description: '微软搜索引擎'
             },
             {
                 id: 7,
                 name: '知乎',
                 url: 'https://zhihu.com',
                 icon: 'fab fa-zhihu',
-                folder: 'media',
-                category: '媒体娱乐'
+                folder: '媒体',
+                description: '知识分享社区'
             },
             {
                 id: 8,
                 name: 'Bilibili',
                 url: 'https://bilibili.com',
                 icon: 'fas fa-play-circle',
-                folder: 'media',
-                category: '媒体娱乐'
+                folder: '媒体',
+                description: '弹幕视频网站'
             }
         ];
         
@@ -195,41 +206,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         emptyBookmarks.style.display = 'none';
         
-        // 按分类分组
-        const bookmarksByCategory = {};
+        // 渲染所有书签
         filteredBookmarks.forEach(bookmark => {
-            const category = bookmark.category || '未分类';
-            if (!bookmarksByCategory[category]) {
-                bookmarksByCategory[category] = [];
-            }
-            bookmarksByCategory[category].push(bookmark);
-        });
-        
-        // 渲染每个分类
-        Object.keys(bookmarksByCategory).forEach(category => {
-            const categoryBookmarks = bookmarksByCategory[category];
-            
-            // 如果有多个分类且不是"全部"视图，显示分类标题
-            if (Object.keys(bookmarksByCategory).length > 1 && currentFolder === 'all') {
-                const categoryHeader = document.createElement('div');
-                categoryHeader.className = 'category-header';
-                categoryHeader.style.gridColumn = 'span 2';
-                categoryHeader.style.fontSize = '0.85rem';
-                categoryHeader.style.fontWeight = '600';
-                categoryHeader.style.color = 'var(--primary-color)';
-                categoryHeader.style.marginTop = '10px';
-                categoryHeader.style.marginBottom = '5px';
-                categoryHeader.style.paddingBottom = '3px';
-                categoryHeader.style.borderBottom = '1px solid var(--light-gray)';
-                categoryHeader.textContent = category;
-                bookmarksGrid.appendChild(categoryHeader);
-            }
-            
-            // 渲染该分类下的所有书签
-            categoryBookmarks.forEach(bookmark => {
-                const bookmarkElement = createBookmarkElement(bookmark);
-                bookmarksGrid.appendChild(bookmarkElement);
-            });
+            const bookmarkElement = createBookmarkElement(bookmark);
+            bookmarksGrid.appendChild(bookmarkElement);
         });
     }
     
@@ -241,6 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
         a.target = '_blank';
         a.rel = 'noopener noreferrer';
         a.setAttribute('data-id', bookmark.id);
+        a.title = bookmark.description || bookmark.name; // 鼠标悬停时显示描述
         
         a.innerHTML = `
             <div class="bookmark-icon">
@@ -248,7 +229,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
             <div class="bookmark-content">
                 <h4>${bookmark.name}</h4>
-                <div class="bookmark-folder">${folderNames[bookmark.folder] || '其他'}</div>
+                <div class="bookmark-folder">${folderNames[bookmark.folder] || bookmark.folder}</div>
                 <div class="bookmark-url">${bookmark.url}</div>
             </div>
         `;
@@ -274,5 +255,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // 初始加载
-    loadBookmarksFromTxt();
+    loadBookmarksFromCSV();
 });

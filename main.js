@@ -117,4 +117,26 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     `;
     document.head.appendChild(notificationStyle);
+    
+    // 调整左右两侧高度一致
+    function adjustHeights() {
+        const leftSection = document.querySelector('.tools-section');
+        const rightSection = document.querySelector('.bookmarks-section');
+        
+        if (leftSection && rightSection) {
+            const leftHeight = leftSection.offsetHeight;
+            const rightHeight = rightSection.offsetHeight;
+            
+            // 取较高的高度
+            const maxHeight = Math.max(leftHeight, rightHeight);
+            
+            // 设置最小高度
+            leftSection.style.minHeight = maxHeight + 'px';
+            rightSection.style.minHeight = maxHeight + 'px';
+        }
+    }
+    
+    // 初始调整和窗口大小变化时调整
+    setTimeout(adjustHeights, 100);
+    window.addEventListener('resize', adjustHeights);
 });

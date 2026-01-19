@@ -29,9 +29,7 @@
                     <button class="tab-btn active" data-tab="amount-converter">
                         <i class="fas fa-money-bill-wave"></i> 金额转大写
                     </button>
-                    <button class="tab-btn" data-tab="calculator">
-                        <i class="fas fa-calculator"></i> 科学计算器
-                    </button>
+                    <!-- 可以在这里添加更多工具 -->
                 </div>
                 
                 <!-- 金额转大写工具 -->
@@ -75,94 +73,14 @@
                         
                         <div class="conversion-history">
                             <h4><i class="fas fa-history"></i> 本次会话转换历史 <span id="history-count">0</span></h4>
-                            <div class="history-list" id="history-list">
-                                <div class="history-empty">
-                                    <i class="far fa-clock"></i>
-                                    <p>暂无转换记录</p>
-                                    <p class="small-text">输入金额后，历史记录将显示在这里</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 科学计算器 -->
-                <div class="tool-content" id="calculator">
-                    <div class="tool-description">
-                        <h3><i class="fas fa-calculator"></i> 科学计算器</h3>
-                        <p>功能全面的科学计算器，支持基本运算、三角函数、对数、指数等</p>
-                    </div>
-                    
-                    <div class="calculator-container-vertical">
-                        <!-- 上半部分：显示区域和历史记录 -->
-                        <div class="calculator-top">
-                            <div class="calculator-display">
-                                <div class="calc-expression" id="calc-expression"></div>
-                                <div class="calc-input" id="calc-input">0</div>
-                            </div>
-                            
-                            <div class="calculator-history">
-                                <h4><i class="fas fa-history"></i> 计算历史 <span id="calc-history-count">0</span></h4>
-                                <div class="calc-history-list" id="calc-history-list">
+                            <div class="history-list-container">
+                                <div class="history-list" id="history-list">
                                     <div class="history-empty">
                                         <i class="far fa-clock"></i>
-                                        <p>暂无计算历史</p>
-                                        <p class="small-text">计算操作将记录在这里</p>
+                                        <p>暂无转换记录</p>
+                                        <p class="small-text">输入金额后，历史记录将显示在这里</p>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-                        
-                        <!-- 下半部分：键盘区域 -->
-                        <div class="calculator-buttons">
-                            <div class="calc-row">
-                                <button class="calc-btn func-btn" data-action="clear">C</button>
-                                <button class="calc-btn func-btn" data-action="backspace">
-                                    <i class="fas fa-backspace"></i>
-                                </button>
-                                <button class="calc-btn func-btn" data-action="percent">%</button>
-                                <button class="calc-btn op-btn" data-action="divide">÷</button>
-                            </div>
-                            <div class="calc-row">
-                                <button class="calc-btn sci-btn" data-action="sin">sin</button>
-                                <button class="calc-btn sci-btn" data-action="cos">cos</button>
-                                <button class="calc-btn sci-btn" data-action="tan">tan</button>
-                                <button class="calc-btn op-btn" data-action="multiply">×</button>
-                            </div>
-                            <div class="calc-row">
-                                <button class="calc-btn sci-btn" data-action="log">log</button>
-                                <button class="calc-btn sci-btn" data-action="ln">ln</button>
-                                <button class="calc-btn sci-btn" data-action="sqrt">√</button>
-                                <button class="calc-btn op-btn" data-action="subtract">-</button>
-                            </div>
-                            <div class="calc-row">
-                                <button class="calc-btn num-btn" data-number="7">7</button>
-                                <button class="calc-btn num-btn" data-number="8">8</button>
-                                <button class="calc-btn num-btn" data-number="9">9</button>
-                                <button class="calc-btn op-btn" data-action="add" style="grid-row: span 2;">+</button>
-                            </div>
-                            <div class="calc-row">
-                                <button class="calc-btn num-btn" data-number="4">4</button>
-                                <button class="calc-btn num-btn" data-number="5">5</button>
-                                <button class="calc-btn num-btn" data-number="6">6</button>
-                            </div>
-                            <div class="calc-row">
-                                <button class="calc-btn num-btn" data-number="1">1</button>
-                                <button class="calc-btn num-btn" data-number="2">2</button>
-                                <button class="calc-btn num-btn" data-number="3">3</button>
-                                <button class="calc-btn op-btn" data-action="equals" style="grid-row: span 2;">=</button>
-                            </div>
-                            <div class="calc-row">
-                                <button class="calc-btn num-btn" data-number="0" style="grid-column: span 2;">0</button>
-                                <button class="calc-btn" data-action="decimal">.</button>
-                            </div>
-                            <div class="calc-row">
-                                <button class="calc-btn sci-btn" data-action="power">x^y</button>
-                                <button class="calc-btn sci-btn" data-action="pi">π</button>
-                                <button class="calc-btn sci-btn" data-action="e">e</button>
-                                <button class="calc-btn func-btn" data-action="toggle-mode">
-                                    <i class="fas fa-sun" id="mode-icon"></i>
-                                </button>
                             </div>
                         </div>
                     </div>
@@ -178,16 +96,16 @@
                 
                 <div class="bookmarks-filters">
                     <button class="filter-btn active" data-folder="all">全部</button>
-                    <button class="filter-btn" data-folder="dev">开发工具</button>
-                    <button class="filter-btn" data-folder="search">搜索引擎</button>
-                    <button class="filter-btn" data-folder="media">媒体娱乐</button>
-                    <button class="filter-btn" data-folder="tools">实用工具</button>
-                    <button class="filter-btn" data-folder="other">其他</button>
+                    <button class="filter-btn" data-folder="开发">开发工具</button>
+                    <button class="filter-btn" data-folder="搜索">搜索引擎</button>
+                    <button class="filter-btn" data-folder="媒体">媒体娱乐</button>
+                    <button class="filter-btn" data-folder="工具">实用工具</button>
+                    <button class="filter-btn" data-folder="学习">学习资源</button>
                 </div>
                 
                 <div class="bookmarks-container">
                     <div class="bookmarks-grid" id="bookmarks-grid">
-                        <!-- 收藏网站将通过JS从TXT文件动态加载 -->
+                        <!-- 收藏网站将通过JS从CSV文件动态加载 -->
                     </div>
                     
                     <div class="bookmarks-loading" id="bookmarks-loading">
@@ -203,7 +121,7 @@
                 </div>
                 
                 <div class="bookmarks-info compact">
-                    <p><i class="fas fa-info-circle"></i> 提示：点击网站卡片可直接访问，数据来自bookmarks.txt文件。</p>
+                    <p><i class="fas fa-info-circle"></i> 提示：点击网站卡片可直接访问，数据来自bookmarks.csv文件。</p>
                 </div>
             </section>
         </div>
@@ -222,7 +140,6 @@
     <!-- 引入JavaScript文件 -->
     <script src="main.js"></script>
     <script src="amount-converter.js"></script>
-    <script src="calculator.js"></script>
     <script src="bookmarks.js"></script>
 </body>
 </html>
