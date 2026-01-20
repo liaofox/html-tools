@@ -3,132 +3,39 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>工具集合站 | 实用工具大全</title>
+    <title>HTML工具资源</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🔧</text></svg>">
 </head>
 <body>
-    <header>
-        <div class="container">
-            <h1><i class="fas fa-tools"></i> 工具集合站</h1>
-            <p>一站式实用工具集合，提高工作效率</p>
-        </div>
+    <header style="display: flex; align-items: center;">
+        <h1 style="text-align: left; margin: 0; padding-left: 20px;">🐱 HTML工具资源</h1>
     </header>
 
-    <main class="container">
-        <div class="layout">
-            <!-- 左侧工具集合 -->
-            <section class="tools-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-wrench"></i> 工具集合</h2>
-                    <p class="section-subtitle">点击标签切换工具</p>
-                </div>
-                
-                <div class="tools-tabs">
-                    <button class="tab-btn active" data-tab="amount-converter">
-                        <i class="fas fa-money-bill-wave"></i> 金额转大写
-                    </button>
-                    <!-- 可以在这里添加更多工具 -->
-                </div>
-                
-                <!-- 金额转大写工具 -->
-                <div class="tool-content active" id="amount-converter">
-                    <div class="tool-description">
-                        <h3><i class="fas fa-exchange-alt"></i> 人民币金额转大写</h3>
-                        <p>输入数值金额，实时转换为中文大写金额格式</p>
-                    </div>
-                    
-                    <div class="converter-container">
-                        <div class="input-group">
-                            <label for="amount-input"><i class="fas fa-keyboard"></i> 输入金额</label>
-                            <div class="input-wrapper">
-                                <span class="input-prefix">¥</span>
-                                <input type="text" id="amount-input" placeholder="请输入金额，如：1234.56">
-                                <button id="clear-amount" class="clear-btn" title="清空">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <div class="input-hint">
-                                <span id="input-status">等待输入...</span>
-                                <span id="char-count">0 位</span>
-                            </div>
-                        </div>
-                        
-                        <div class="converter-result">
-                            <label for="chinese-output"><i class="fas fa-language"></i> 中文大写金额</label>
-                            <div class="output-wrapper">
-                                <textarea id="chinese-output" readonly placeholder="大写金额将显示在这里"></textarea>
-                                <button id="copy-result" class="copy-btn" title="复制结果">
-                                    <i class="far fa-copy"></i>
-                                </button>
-                            </div>
-                            <div class="output-hint">
-                                <span id="output-status">结果将实时显示</span>
-                                <button id="clear-history" class="text-btn">
-                                    <i class="fas fa-trash-alt"></i> 清空记录
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div class="conversion-history">
-                            <h4><i class="fas fa-history"></i> 本次会话转换历史 <span id="history-count">0</span></h4>
-                            <div class="history-list-container">
-                                <div class="history-list" id="history-list">
-                                    <div class="history-empty">
-                                        <i class="far fa-clock"></i>
-                                        <p>暂无转换记录</p>
-                                        <p class="small-text">输入金额后，历史记录将显示在这里</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-            
-            <!-- 右侧网站收藏夹 -->
-            <section class="bookmarks-section">
-                <div class="section-header">
-                    <h2><i class="fas fa-bookmark"></i> 常用网站</h2>
-                    <p class="section-subtitle">分类整理，快速访问</p>
-                </div>
-                
-                <div class="bookmarks-container" id="bookmarks-container">
-                    <!-- 分类板块将通过JS从CSV文件动态加载 -->
-                </div>
-                
-                <div class="bookmarks-loading" id="bookmarks-loading">
-                    <i class="fas fa-spinner fa-spin"></i>
-                    <p>正在加载网站列表...</p>
-                </div>
-                
-                <div class="bookmarks-empty" id="empty-bookmarks">
-                    <i class="fas fa-bookmark fa-3x"></i>
-                    <h3>暂无网站数据</h3>
-                    <p>无法加载网站列表，请检查网络连接</p>
-                </div>
-                
-                <div class="bookmarks-info compact">
-                    <p><i class="fas fa-info-circle"></i> 提示：点击网站名称可直接访问，数据来自bookmarks.csv文件。</p>
-                </div>
-            </section>
-        </div>
+    <main>
+        <!-- 工具区域 -->
+        <section id="tools-section">
+            <h2>🛠️ 实用工具</h2>
+            <div class="tools-grid" style="grid-template-columns: repeat(3, 200px); justify-content: start;">
+                <a href="amount-converter.html" class="tool-item" style="background: rgba(102, 126, 234, 0.1); color: #667eea; box-shadow: none; transition: all 0.3s ease;">
+                    <span class="tool-name">💰 金额转大写</span>
+                </a>
+                <a href="scientific-calculator.html" class="tool-item" style="background: rgba(76, 175, 80, 0.1); color: #4caf50; box-shadow: none; transition: all 0.3s ease;">
+                    <span class="tool-name">🧮 科学计算器</span>
+                </a>
+                <a href="universal-converter.html" class="tool-item" style="background: rgba(255, 152, 0, 0.1); color: #ff9800; box-shadow: none; transition: all 0.3s ease;">
+                    <span class="tool-name">🔄 全能转换器</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- 网站区域 -->
+        <section id="websites-section">
+            <h2>🌐 常用网站</h2>
+            <div class="websites-grid" id="websites-grid"></div>
+        </section>
     </main>
-    
-    <footer>
-        <div class="container">
-            <p>工具集合站 © 2023 - 使用纯HTML/CSS/JavaScript构建</p>
-            <p class="footer-links">
-                <a href="https://github.com" target="_blank">GitHub</a> | 
-                <a href="#" id="report-issue">反馈问题</a>
-            </p>
-        </div>
-    </footer>
-    
-    <!-- 引入JavaScript文件 -->
+
     <script src="main.js"></script>
-    <script src="amount-converter.js"></script>
-    <script src="bookmarks.js"></script>
+    <script src="websites.js"></script>
 </body>
 </html>

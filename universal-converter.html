@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全能转换器 - HTML工具资源</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 12px 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 80px 20px 20px;
+        }
+
+        .converter-main {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .input-section {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .input-wrapper {
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            height: 65px;
+            padding: 15px 25px;
+            border: 3px solid #e8e8e8;
+            border-radius: 12px;
+            font-size: 20px;
+            font-family: 'Microsoft YaHei', sans-serif;
+            outline: none;
+            box-sizing: border-box;
+            text-align: center;
+        }
+
+        .input-wrapper input:focus {
+            border-color: #667eea;
+        }
+
+        .conversion-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+        }
+
+        .conversion-module {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .module-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e8e8e8;
+        }
+
+        .module-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+        }
+
+        .module-title span {
+            margin-right: 8px;
+            font-size: 18px;
+        }
+
+        .rate-status {
+            font-size: 11px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            background: #e8f5e8;
+            color: #27ae60;
+        }
+
+        .rate-status.error {
+            background: #ffe6e6;
+            color: #e74c3c;
+        }
+
+        .unit-select {
+            width: 100%;
+            height: 45px;
+            padding: 10px 15px;
+            border: 2px solid #e8e8e8;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 15px;
+            outline: none;
+            background: white;
+        }
+
+        .unit-select:focus {
+            border-color: #667eea;
+        }
+
+        .result-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            flex: 1;
+        }
+
+        .result-item {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            border: 1px solid #e8e8e8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .result-value {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .result-unit {
+            color: #666;
+            font-size: 12px;
+        }
+
+        /* 金额模块特殊样式 */
+        .amount-result {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            text-align: center;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .amount-result .result-value {
+            font-size: 16px;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 1200px) {
+            .conversion-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .conversion-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .conversion-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .input-wrapper input {
+                height: 55px;
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px;">
+        <h1 style="margin: 0; font-size: 20px; font-weight: 600; color: #2c3e50;">🔄 全能转换器</h1>
+        <a href="index.html" style="text-decoration: none; color: #667eea; font-weight: 500; padding: 8px 16px; background: rgba(102, 126, 234, 0.1); border-radius: 6px; margin-left: auto;">
+            ← 返回首页
+        </a>
+    </header>
+
+    <div class="container">
+        <div class="converter-main">
+            <!-- 统一输入框 -->
+            <div class="input-section">
+                <div class="input-wrapper">
+                    <input type="text" id="main-input" placeholder="💰 输入金额或数值" oninput="handleInput()">
+                </div>
+            </div>
+
+            <!-- 5个转换模块 -->
+            <div class="conversion-grid">
+                <!-- 1. 人民币金额转大写 -->
+                <div class="conversion-module">
+                    <div class="module-header">
+                        <div class="module-title"><span>💰</span>金额转大写</div>
+                    </div>
+                    <div class="result-list">
+                        <div style="text-align: left; font-weight: 600; color: #2c3e50; margin-bottom: 10px; font-size: 14px;">
+                            大写金额
+                        </div>
+                        <div class="result-item amount-result" id="amount-result" style="min-height: 80px; justify-content: center; text-align: center;">
+                            <span class="result-value" style="font-size: 15px; line-height: 1.4;">请输入金额</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 货币换算 -->
+                <div class="conversion-module">
+                    <div class="module-header">
+                        <div class="module-title"><span>💱</span>货币换算</div>
+                        <div class="rate-status" id="currency-status">加载中...</div>
+                    </div>
+                    <select class="unit-select" id="currency-to">
+                        <option value="USD">美元 (USD)</option>
+                        <option value="EUR">欧元 (EUR)</option>
+                        <option value="GBP">英镑 (GBP)</option>
+                        <option value="JPY">日元 (JPY)</option>
+                        <option value="KRW">韩元 (KRW)</option>
+                    </select>
+                    <div class="result-list" id="currency-results"></div>
+                </div>
+
+                <!-- 3. 长度换算 -->
+                <div class="conversion-module">
+                    <div class="module-header">
+                        <div class="module-title"><span>📏</span>长度换算</div>
+                    </div>
+                    <select class="unit-select" id="length-to">
+                        <option value="cm">厘米 (cm)</option>
+                        <option value="m">米 (m)</option>
+                        <option value="mm">毫米 (mm)</option>
+                        <option value="km">千米 (km)</option>
+                        <option value="inch">英寸 (in)</option>
+                    </select>
+                    <div class="result-list" id="length-results"></div>
+                </div>
+
+                <!-- 4. 体积换算 -->
+                <div class="conversion-module">
+                    <div class="module-header">
+                        <div class="module-title"><span>🧪</span>体积换算</div>
+                    </div>
+                    <select class="unit-select" id="volume-to">
+                        <option value="mL">毫升 (mL)</option>
+                        <option value="L">升 (L)</option>
+                        <option value="m3">立方米 (m³)</option>
+                        <option value="gal">加仑 (gal)</option>
+                    </select>
+                    <div class="result-list" id="volume-results"></div>
+                </div>
+
+                <!-- 5. 质量换算 -->
+                <div class="conversion-module">
+                    <div class="module-header">
+                        <div class="module-title"><span>⚖️</span>质量换算</div>
+                    </div>
+                    <select class="unit-select" id="weight-to">
+                        <option value="g">克 (g)</option>
+                        <option value="kg">千克 (kg)</option>
+                        <option value="mg">毫克 (mg)</option>
+                        <option value="lb">磅 (lb)</option>
+                        <option value="oz">盎司 (oz)</option>
+                    </select>
+                    <div class="result-list" id="weight-results"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="universal-converter.js"></script>
+</body>
+</html>

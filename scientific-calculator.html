@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科学计算器 - HTML工具资源</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 0;
+            margin: 0;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 12px 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 80px 20px 20px;
+        }
+
+        .calculator-container {
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 25px;
+        }
+
+        .calculator-main {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .display {
+            background: #2c3e50;
+            color: white;
+            padding: 25px;
+            border-radius: 10px;
+            font-size: 32px;
+            text-align: right;
+            margin-bottom: 20px;
+            min-height: 70px;
+            font-family: 'Courier New', monospace;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+
+        .input-history-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .history-panel {
+            height: 120px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e8e8e8;
+            padding-bottom: 15px;
+        }
+
+        .history-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .history-item {
+            padding: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .history-result {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            height: 60px;
+            padding: 15px 20px;
+            border: 2px solid #e8e8e8;
+            border-radius: 10px;
+            font-size: 18px;
+            font-family: 'Courier New', monospace;
+            background: white;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .input-wrapper input:focus {
+            border-color: #667eea;
+        }
+
+        .input-wrapper input.error {
+            border-color: #e74c3c;
+        }
+
+        .buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .calc-btn {
+            padding: 15px 10px;
+            border: 2px solid #e8e8e8;
+            border-radius: 8px;
+            background: white;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .calc-btn:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+
+        .calc-btn.number { background: #f8f9fa; }
+        .calc-btn.operator { background: #667eea; color: white; border-color: #667eea; }
+        .calc-btn.function { background: #764ba2; color: white; border-color: #764ba2; }
+        .calc-btn.equals { background: #27ae60; color: white; border-color: #27ae60; }
+        .calc-btn.clear { background: #e74c3c; color: white; border-color: #e74c3c; }
+        .calc-btn.constant { background: #f39c12; color: white; border-color: #f39c12; }
+        .calc-btn.graph { background: #3498db; color: white; border-color: #3498db; }
+
+        .bottom-buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .bottom-buttons .calc-btn {
+            padding: 18px 15px;
+            font-size: 14px;
+        }
+
+        .graph-btn-row {
+            margin-top: 15px;
+        }
+
+        .graph-btn-row .calc-btn {
+            width: 100%;
+            padding: 20px;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .graph-container {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .graph-canvas {
+            height: 500px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .graph-help {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 10px;
+            padding: 20px;
+            color: white;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .graph-help code {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .empty-history {
+            text-align: center;
+            color: #999;
+            padding: 30px;
+            font-style: italic;
+        }
+
+        @media (max-width: 1200px) {
+            .calculator-container {
+                grid-template-columns: 1fr;
+            }
+            .buttons-grid {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            .bottom-buttons {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <header style="display: flex; justify-content: space-between; align-items: center; padding: 12px 20px;">
+        <h1 style="margin: 0; font-size: 20px; font-weight: 600; color: #2c3e50;">🧮 科学计算器</h1>
+        <a href="index.html" style="text-decoration: none; color: #667eea; font-weight: 500; padding: 8px 16px; background: rgba(102, 126, 234, 0.1); border-radius: 6px;">
+            ← 返回首页
+        </a>
+    </header>
+
+    <div class="container">
+        <div class="calculator-container">
+            <!-- 左侧计算区域 -->
+            <div class="calculator-main">
+                <div class="display" id="display">0</div>
+                
+                <div class="input-history-container">
+                    <div class="history-panel">
+                        <ul class="history-list" id="history-list">
+                            <li class="empty-history">暂无计算历史</li>
+                        </ul>
+                    </div>
+                    <div class="input-wrapper">
+                        <input type="text" id="math-input" placeholder="输入数学表达式，支持 sin(x)、cos(x)、x^2 等" 
+                               onkeydown="handleKeyDown(event)" onkeypress="handleEnter(event)">
+                    </div>
+                </div>
+
+                <!-- 第一排 -->
+                <div class="buttons-grid">
+                    <button class="calc-btn clear" onclick="clearAll()">C</button>
+                    <button class="calc-btn" onclick="backspace()">⌫</button>
+                    <button class="calc-btn operator" onclick="addToInput('(')">(</button>
+                    <button class="calc-btn operator" onclick="addToInput(')')">)</button>
+                    <button class="calc-btn function" onclick="addToInput('sin(')">sin</button>
+                    <button class="calc-btn function" onclick="addToInput('cos(')">cos</button>
+                </div>
+
+                <!-- 第二排 -->
+                <div class="buttons-grid">
+                    <button class="calc-btn number" onclick="addToInput('7')">7</button>
+                    <button class="calc-btn number" onclick="addToInput('8')">8</button>
+                    <button class="calc-btn number" onclick="addToInput('9')">9</button>
+                    <button class="calc-btn operator" onclick="addToInput('+')">+</button>
+                    <button class="calc-btn function" onclick="addToInput('tan(')">tan</button>
+                    <button class="calc-btn function" onclick="addToInput('log(')">log</button>
+                </div>
+
+                <!-- 第三排 -->
+                <div class="buttons-grid">
+                    <button class="calc-btn number" onclick="addToInput('4')">4</button>
+                    <button class="calc-btn number" onclick="addToInput('5')">5</button>
+                    <button class="calc-btn number" onclick="addToInput('6')">6</button>
+                    <button class="calc-btn operator" onclick="addToInput('-')">-</button>
+                    <button class="calc-btn function" onclick="addToInput('sqrt(')">√</button>
+                    <button class="calc-btn function" onclick="addToInput('ln(')">ln</button>
+                </div>
+
+                <!-- 第四排 -->
+                <div class="buttons-grid">
+                    <button class="calc-btn number" onclick="addToInput('1')">1</button>
+                    <button class="calc-btn number" onclick="addToInput('2')">2</button>
+                    <button class="calc-btn number" onclick="addToInput('3')">3</button>
+                    <button class="calc-btn operator" onclick="addToInput('*')">×</button>
+                    <button class="calc-btn function" onclick="addToInput('abs(')">abs</button>
+                    <button class="calc-btn equals" onclick="calculate()">=</button>
+                </div>
+
+                <!-- 第五排 -->
+                <div class="buttons-grid">
+                    <button class="calc-btn number" onclick="addToInput('0')">0</button>
+                    <button class="calc-btn number" onclick="addToInput('.')">.</button>
+                    <button class="calc-btn operator" onclick="addToInput('/')">÷</button>
+                    <button class="calc-btn operator" onclick="addToInput('^')">^</button>
+                    <button class="calc-btn constant" onclick="addToInput('π')">π</button>
+                    <button class="calc-btn constant" onclick="addToInput('e')">e</button>
+                </div>
+
+                <!-- 科学函数区域 -->
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 10px;">
+                    <button class="calc-btn function" onclick="addToInput('sin(')">sin</button>
+                    <button class="calc-btn function" onclick="addToInput('cos(')">cos</button>
+                    <button class="calc-btn function" onclick="addToInput('tan(')">tan</button>
+                    <button class="calc-btn function" onclick="addToInput('asin(')">asin</button>
+                    <button class="calc-btn function" onclick="addToInput('acos(')">acos</button>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 10px;">
+                    <button class="calc-btn function" onclick="addToInput('atan(')">atan</button>
+                    <button class="calc-btn function" onclick="addToInput('log(')">log</button>
+                    <button class="calc-btn function" onclick="addToInput('ln(')">ln</button>
+                    <button class="calc-btn function" onclick="addToInput('exp(')">exp</button>
+                    <button class="calc-btn function" onclick="addToInput('sqrt(')">sqrt</button>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 10px;">
+                    <button class="calc-btn function" onclick="addToInput('abs(')">abs</button>
+                    <button class="calc-btn function" onclick="addToInput('floor(')">floor</button>
+                    <button class="calc-btn function" onclick="addToInput('ceil(')">ceil</button>
+                    <button class="calc-btn function" onclick="addToInput('round(')">round</button>
+                    <button class="calc-btn function" onclick="addToInput('random(')">rand</button>
+                </div>
+
+                <!-- 角度模式切换 -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                    <button class="calc-btn function" onclick="addToInput('x')">变量 x</button>
+                    <button class="calc-btn function" onclick="addToInput('y')">变量 y</button>
+                </div>
+
+                <!-- 控制按钮 -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                    <button class="calc-btn" onclick="toggleAngleMode()" id="angle-mode" style="background: #f39c12; color: white;">弧度模式</button>
+                    <button class="calc-btn clear" onclick="clearHistory()">清空历史</button>
+                </div>
+
+                <!-- 绘图按钮 -->
+                <div class="graph-btn-row">
+                    <button class="calc-btn graph" onclick="plotFunction()">📈 绘制函数图像</button>
+                </div>
+            </div>
+
+            <!-- 右侧绘图区域 -->
+            <div class="graph-container">
+                <h3 style="font-size: 18px; color: #2c3e50; margin-bottom: 20px;">📈 函数图像</h3>
+                <div class="graph-canvas">
+                    <canvas id="graph-canvas"></canvas>
+                </div>
+                <div class="graph-help">
+                    <p><strong>📖 绘图教程：</strong></p>
+                    <p>1. 输入含变量的函数，如 <code>sin(x)</code>、<code>x^2+1</code></p>
+                    <p>2. 点击 <code>📈 绘图</code> 按钮生成图像</p>
+                    <p>3. 可切换角度/弧度模式进行三角函数绘图</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="scientific-calculator.js"></script>
+</body>
+</html>
