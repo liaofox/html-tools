@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const group = numStr.slice(start, end);
                 
                 let groupResult = '';
-                for (let j = 0; j <group.length; j++) {
+                for (let j = 0; j < group.length; j++) {
                     const digit = parseInt(group[j]);
                     const position = group.length - j - 1;
                     

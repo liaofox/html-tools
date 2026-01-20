@@ -94,34 +94,23 @@
                     <p class="section-subtitle">分类整理，快速访问</p>
                 </div>
                 
-                <div class="bookmarks-filters">
-                    <button class="filter-btn active" data-folder="all">全部</button>
-                    <button class="filter-btn" data-folder="开发">开发工具</button>
-                    <button class="filter-btn" data-folder="搜索">搜索引擎</button>
-                    <button class="filter-btn" data-folder="媒体">媒体娱乐</button>
-                    <button class="filter-btn" data-folder="工具">实用工具</button>
-                    <button class="filter-btn" data-folder="学习">学习资源</button>
+                <div class="bookmarks-container" id="bookmarks-container">
+                    <!-- 分类板块将通过JS从CSV文件动态加载 -->
                 </div>
                 
-                <div class="bookmarks-container">
-                    <div class="bookmarks-grid" id="bookmarks-grid">
-                        <!-- 收藏网站将通过JS从CSV文件动态加载 -->
-                    </div>
-                    
-                    <div class="bookmarks-loading" id="bookmarks-loading">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <p>正在加载网站列表...</p>
-                    </div>
-                    
-                    <div class="bookmarks-empty" id="empty-bookmarks">
-                        <i class="fas fa-bookmark fa-3x"></i>
-                        <h3>暂无网站数据</h3>
-                        <p>无法加载网站列表，请检查网络连接</p>
-                    </div>
+                <div class="bookmarks-loading" id="bookmarks-loading">
+                    <i class="fas fa-spinner fa-spin"></i>
+                    <p>正在加载网站列表...</p>
+                </div>
+                
+                <div class="bookmarks-empty" id="empty-bookmarks">
+                    <i class="fas fa-bookmark fa-3x"></i>
+                    <h3>暂无网站数据</h3>
+                    <p>无法加载网站列表，请检查网络连接</p>
                 </div>
                 
                 <div class="bookmarks-info compact">
-                    <p><i class="fas fa-info-circle"></i> 提示：点击网站卡片可直接访问，数据来自bookmarks.csv文件。</p>
+                    <p><i class="fas fa-info-circle"></i> 提示：点击网站名称可直接访问，数据来自bookmarks.csv文件。</p>
                 </div>
             </section>
         </div>

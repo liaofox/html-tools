@@ -136,6 +136,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // 暴露到全局，供其他文件调用
+    window.adjustHeights = adjustHeights;
+    
     // 初始调整和窗口大小变化时调整
     setTimeout(adjustHeights, 100);
     window.addEventListener('resize', adjustHeights);

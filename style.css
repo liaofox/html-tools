@@ -409,36 +409,6 @@ header p {
 }
 
 /* 网站收藏夹 */
-.bookmarks-filters {
-    display: flex;
-    gap: 5px;
-    margin-bottom: 0.8rem;
-    flex-wrap: wrap;
-    flex-shrink: 0;
-}
-
-.filter-btn {
-    padding: 5px 10px;
-    background-color: white;
-    border: 1px solid var(--light-gray);
-    border-radius: 15px;
-    font-size: 0.75rem;
-    color: var(--gray-color);
-    cursor: pointer;
-    transition: var(--transition);
-}
-
-.filter-btn:hover {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
-}
-
-.filter-btn.active {
-    background-color: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
-}
-
 .bookmarks-section {
     display: flex;
     flex-direction: column;
@@ -446,32 +416,43 @@ header p {
 }
 
 .bookmarks-container {
-    background-color: white;
-    border-radius: var(--border-radius);
-    padding: 0.8rem;
-    box-shadow: var(--box-shadow);
     flex: 1; /* 占据剩余空间 */
     min-height: 0; /* 允许内容收缩 */
-    overflow: hidden; /* 确保内部滚动 */
-    position: relative;
-    display: flex;
-    flex-direction: column;
+    overflow-y: auto;
+    margin-bottom: 0.8rem;
 }
 
-.bookmarks-grid {
+/* 分类板块样式 */
+.category-section {
+    margin-bottom: 1.5rem;
+}
+
+.category-title {
+    font-size: 1rem;
+    color: var(--primary-color);
+    margin-bottom: 0.6rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--light-gray);
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.category-title::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+}
+
+.category-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 6px;
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    align-content: start; /* 从顶部开始排列 */
-}
-
-@media (max-width: 768px) {
-    .bookmarks-grid {
-        grid-template-columns: 1fr;
-    }
+    margin-bottom: 0.5rem;
 }
 
 /* 网址卡片 - 紧凑设计 */
@@ -481,12 +462,12 @@ header p {
     padding: 8px;
     border: 1px solid var(--light-gray);
     display: flex;
-    gap: 8px;
+    align-items: center;
+    gap: 10px;
     transition: var(--transition);
-    align-items: flex-start;
     text-decoration: none;
     color: inherit;
-    height: 56px; /* 固定高度，大约两行文字 */
+    height: 48px; /* 固定高度，紧凑设计 */
     overflow: hidden; /* 隐藏超出部分 */
 }
 
@@ -499,31 +480,24 @@ header p {
 }
 
 .bookmark-icon {
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     background-color: #f0f5ff;
     border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
+    overflow: hidden;
 }
 
-.bookmark-icon i {
-    font-size: 1rem;
-    color: var(--primary-color);
+.bookmark-icon img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
 }
 
-.bookmark-content {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    height: 40px; /* 与图标高度一致 */
-    justify-content: space-between; /* 均匀分布内容 */
-}
-
-.bookmark-content h4 {
+.bookmark-name {
     color: var(--dark-color);
     font-size: 0.85rem;
     font-weight: 600;
@@ -531,48 +505,14 @@ header p {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    margin: 0;
-}
-
-.bookmark-url {
-    color: var(--primary-color);
-    font-size: 0.75rem;
-    text-decoration: none;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    line-height: 1.2;
-    display: block;
-}
-
-.bookmark-folder {
-    display: inline-block;
-    font-size: 0.65rem;
-    padding: 1px 5px;
-    background-color: #f0f0f0;
-    color: var(--gray-color);
-    border-radius: 8px;
-    line-height: 1.2;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 80px;
-}
-
-.bookmark-description {
-    display: none; /* 不显示描述，节省空间 */
+    flex: 1;
 }
 
 .bookmarks-loading {
     text-align: center;
     padding: 3rem 1rem;
     color: var(--gray-color);
-    grid-column: span 2;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 100%;
+    display: none;
 }
 
 .bookmarks-loading i {
@@ -589,12 +529,6 @@ header p {
     text-align: center;
     padding: 3rem 1rem;
     color: var(--gray-color);
-    grid-column: span 2;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 100%;
     display: none;
 }
 
@@ -695,15 +629,10 @@ footer p {
     }
     
     .bookmark-item {
-        height: 60px; /* 移动端稍高一点 */
+        height: 52px; /* 移动端稍高一点 */
     }
     
-    .bookmark-icon {
-        width: 36px;
-        height: 36px;
-    }
-    
-    .bookmark-content {
-        height: 36px;
+    .category-grid {
+        grid-template-columns: 1fr; /* 移动端单列显示 */
     }
 }
