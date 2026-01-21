@@ -298,13 +298,10 @@ class ScientificCalculator {
 
     convertToRadians(expr) {
         // 将角度转换为弧度
-        return expr
-            .replace(/sin\(([^)]+)\)/g, 'Math.sin($1 * Math.PI / 180)')
-            .replace(/cos\(([^)]+)\)/g, 'Math.cos($1 * Math.PI / 180)')
-            .replace(/tan\(([^)]+)\)/g, 'Math.tan($1 * Math.PI / 180)')
-            .replace(/asin\(([^)]+)\)/g, 'Math.asin($1) * 180 / Math.PI')
-            .replace(/acos\(([^)]+)\)/g, 'Math.acos($1) * 180 / Math.PI')
-            .replace(/atan\(([^)]+)\)/g, 'Math.atan($1) * 180 / Math.PI');
+        // sin(20) -> Math.sin(20 * Math.PI / 180)
+        return expr.replace(/sin\(([^)]+)\)/g, 'Math.sin($1 * Math.PI / 180)')
+                 .replace(/cos\(([^)]+)\)/g, 'Math.cos($1 * Math.PI / 180)')
+                 .replace(/tan\(([^)]+)\)/g, 'Math.tan($1 * Math.PI / 180)');
     }
 
     calculate() {
