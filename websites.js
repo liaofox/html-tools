@@ -1,5 +1,37 @@
-// 常用网站维护脚本 - 改进图标获取功能
+// 常用网站维护脚本 - 带缓存功能的图标获取
 document.addEventListener('DOMContentLoaded', function() {
+    // 图标缓存管理
+    const ICON_CACHE_KEY = 'website_icons_cache';
+    const CACHE_EXPIRE_DAYS = 1; // 缓存1天
+    
+    // 获取缓存
+    function getIconCache() {
+        try {
+            const cache = localStorage.getItem(ICON_CACHE_KEY);
+            return cache ? JSON.parse(cache) : {};
+        } catch (e) {
+            return {};
+        }
+    }
+    
+    // 设置缓存
+    function setIconCache(cache) {
+        try {
+            localStorage.setItem(ICON_CACHE_KEY, JSON.stringify(cache));
+        } catch (e) {
+            console.warn('无法保存图标缓存:', e);
+        }
+    }
+    
+    // 检查缓存是否过期
+    function isCacheValid(timestamp) {
+        return Date.now() - timestamp < CACHE_EXPIRE_DAYS * 24 * 60 * 60 * 1000;
+    }
+    
+    // 获取网站的缓存键
+    function getCacheKey(url) {
+        return new URL(url).hostname;
+    }
     const websitesData = [
         {
             category: '开发平台',
@@ -75,47 +107,59 @@ document.addEventListener('DOMContentLoaded', function() {
             item.target = '_blank';
             item.rel = 'noopener noreferrer';
             item.title = site.name;
-
             const domain = new URL(site.url).hostname;
-            // 国内优先的favicon获取策略
-            const faviconUrls = [
-                // 1. 直接从网站获取favicon（最快最可靠）
-                `https://${domain}/favicon.ico`,
-                // 2. 国内CDN服务
-                `https://api.byi.pw/favicon/?url=${encodeURIComponent(site.url)}`,
-                `https://favicon.cccyun.cc/${encodeURIComponent(domain)}`,
-                // 3. 国际通用服务作为后备
-                `https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(domain)}`
-            ];
+            const cacheKey = getCacheKey(site.url);
+            const iconCache = getIconCache();
+            
+            // 默认图标
+            const defaultIcon = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTIiIGZpbGw9IiM0YTkwZTIiIGZpbGwtb3BhY2l0eT0iMC4xIi8+Cjx0ZXh0IHg9IjMyIiB5PSIzOCIgdGV4dC1hbmNob3I9Im1iZGRsZSIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0iIzRhOTBlMiI+8J+OqzwvdGV4dD4KPC9zdmc+';
 
-            // 创建一个图片预加载和回退机制
             const img = document.createElement('img');
             img.className = 'site-icon';
             img.alt = site.name;
-            // 设置加载错误的回退图标和默认图标
-            const defaultIcon = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iMTIiIGZpbGw9IiM0YTkwZTIiIGZpbGwtb3BhY2l0eT0iMC4xIi8+Cjx0ZXh0IHg9IjMyIiB5PSIzOCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9IjYwMCIgZmlsbD0iIzRhOTBlMiI+8J+OqzwvdGV4dD4KPC9zdmc+';
             
-            // 智能加载favicon
-            let currentIndex = 0;
-            const tryLoadFavicon = () => {
-                if (currentIndex < faviconUrls.length) {
-                    img.src = faviconUrls[currentIndex];
-                    currentIndex++;
-                } else {
-                    img.src = defaultIcon;
-                }
-            };
+            // 检查缓存
+            if (iconCache[cacheKey] && isCacheValid(iconCache[cacheKey].timestamp)) {
+                // 使用缓存的图标
+                img.src = iconCache[cacheKey].iconUrl;
+                img.onerror = () => { img.src = defaultIcon; };
+            } else {
+                // 重新获取图标
+                const faviconUrls = [
+                    `https://${domain}/favicon.ico`,
+                    `https://api.byi.pw/favicon/?url=${encodeURIComponent(site.url)}`,
+                    `https://favicon.cccyun.cc/${encodeURIComponent(domain)}`,
+                    `https://www.google.com/s2/favicons?sz=64&domain=${encodeURIComponent(domain)}`
+                ];
 
-            img.onerror = tryLoadFavicon;
-            img.onload = function() {
-                // 验证是否是有效的favicon（过滤小尺寸图标）
-                if (this.naturalWidth <= 16 || this.naturalHeight <= 16) {
-                    this.onerror();
-                }
-            };
+                let currentIndex = 0;
+                const tryLoadFavicon = () => {
+                    if (currentIndex < faviconUrls.length) {
+                        img.src = faviconUrls[currentIndex];
+                        currentIndex++;
+                    } else {
+                        img.src = defaultIcon;
+                    }
+                };
 
-            // 开始加载第一个favicon
-            tryLoadFavicon();
+                img.onerror = tryLoadFavicon;
+                img.onload = function() {
+                    // 验证是否是有效的favicon
+                    if (this.naturalWidth > 16 && this.naturalHeight > 16) {
+                        // 缓存成功的图标
+                        const cache = getIconCache();
+                        cache[cacheKey] = {
+                            iconUrl: this.src,
+                            timestamp: Date.now()
+                        };
+                        setIconCache(cache);
+                    } else {
+                        this.onerror();
+                    }
+                };
+
+                tryLoadFavicon();
+            }
 
             const nameSpan = document.createElement('span');
             nameSpan.className = 'site-name';
