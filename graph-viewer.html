@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>函数图像查看器</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            background: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        .graph-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .graph-canvas {
+            width: 100%;
+            height: 500px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+        .back-button {
+            padding: 10px 20px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .function-info {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="graph-header">
+            <h1>📈 函数图像</h1>
+            <a href="scientific-calculator.html" class="back-button">← 返回计算器</a>
+        </div>
+        
+        <div class="function-info">
+            <div id="function-expression">正在加载函数表达式...</div>
+        </div>
+        
+        <div class="graph-canvas">
+            <canvas id="graph-canvas"></canvas>
+        </div>
+
+        <div style="margin-top: 20px; padding: 15px; background: #f0f8ff; border-radius: 8px;">
+            <h3>📖 使用说明</h3>
+            <p>• 图像显示函数在 x = [-10, 10] 范围内的值</p>
+            <p>• 支持常见数学函数：sin(x), cos(x), x^2, log(x) 等</p>
+            <p>• 使用鼠标滚轮可以缩放图像</p>
+        </div>
+    </div>
+
+<script>
+        // 从URL参数获取函数表达式
+        const urlParams = new URLSearchParams(window.location.search);
+        const functionExpr = urlParams.get('function') || 'sin(x)';
+        const angleMode = urlParams.get('angleMode') || 'degrees';
+        
+        document.getElementById('function-expression').textContent = `函数：${functionExpr} (${angleMode === 'degrees' ? '角度模式' : '弧度模式'})`;
+        
+        // 初始化图表
+        const ctx = document.getElementById('graph-canvas').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'scatter',
+            data: {
+                datasets: [{
+                    label: functionExpr,
+                    data: [],
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    showLine: true,
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'center',
+                        min: -20,
+                        max: 20,
+                        title: {
+                            display: true,
+                            text: 'x'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'y'
+                        }
+                    }
+                }
+            }
+        });
+        
+            // 绘制函数图像 - 智能坐标轴调整
+            function plotFunction() {
+                const xValues = [];
+                const yValues = [];
+                const step = 0.1;
+                let yMin = Infinity;
+                let yMax = -Infinity;
+                
+                // 智能确定x轴范围
+                let xRange = 20; // 默认范围
+                
+                // 根据函数类型动态调整x轴范围
+                if (functionExpr.includes('log') || functionExpr.includes('sqrt')) {
+                    xRange = 10; // 对数函数和平方根函数范围小一些
+                } else if (functionExpr.includes('sin') || functionExpr.includes('cos')) {
+                    xRange = 4 * Math.PI; // 三角函数范围大一些
+                } else if (functionExpr.includes('^') || functionExpr.includes('**')) {
+                    xRange = 5; // 幂函数范围小一些
+                }
+                
+                // 计算x轴范围
+                const xMin = -Math.abs(xRange);
+                const xMax = Math.abs(xRange);
+                
+                for (let x = xMin; x <= xMax; x += step) {
+                    try {
+                        // 替换函数表达式中的变量
+                        let expr = functionExpr.replace(/x/gi, `(${x})`);
+                        
+                        // 处理角度模式
+                        expr = convertAngleMode(expr, angleMode);
+                        
+                        // 替换其他数学函数和常数
+                        expr = expr
+                            .replace(/π/g, 'Math.PI')
+                            .replace(/pi/g, 'Math.PI')
+                            .replace(/e/g, 'Math.E')
+                            .replace(/\^/g, '**')
+                            .replace(/sqrt\(/g, 'Math.sqrt(')
+                            .replace(/log\(/g, 'Math.log10(')
+                            .replace(/ln\(/g, 'Math.log(')
+                            .replace(/exp\(/g, 'Math.exp(');
+                        
+                        const y = eval(expr);
+                        
+                        if (typeof y === 'number' && isFinite(y)) {
+                            xValues.push(x);
+                            yValues.push(y);
+                            
+                            // 更新y值范围
+                            if (y < yMin) yMin = y;
+                            if (y > yMax) yMax = y;
+                        }
+                    } catch (e) {
+                        continue;
+                    }
+                }
+                
+                // 智能调整y轴范围
+                let finalYMin, finalYMax;
+                
+                if (yMin === Infinity || yMax === -Infinity) {
+                    // 如果没有有效数据点，使用默认范围
+                    finalYMin = -10;
+                    finalYMax = 10;
+                } else if (Math.abs(yMax - yMin) < 0.001) {
+                    // 如果y值范围非常小（常数函数）
+                    finalYMin = yMin - 1;
+                    finalYMax = yMax + 1;
+                } else {
+                    // 计算合理的y轴范围
+                    const yRange = yMax - yMin;
+                    const padding = yRange * 0.2; // 20%的padding
+                    finalYMin = yMin - padding;
+                    finalYMax = yMax + padding;
+                }
+                
+                // 确保y轴范围不会太大
+                if (Math.abs(finalYMax - finalYMin) > 1000) {
+                    finalYMin = -100;
+                    finalYMax = 100;
+                }
+                
+                // 更新图表数据和范围
+                chart.data.datasets[0].data = xValues.map((x, i) => ({x, y: yValues[i]}));
+                chart.data.datasets[0].label = functionExpr;
+                chart.options.scales.x.min = xMin;
+                chart.options.scales.x.max = xMax;
+                chart.options.scales.y.min = finalYMin;
+                chart.options.scales.y.max = finalYMax;
+                chart.update();
+            }
+        
+            // 页面加载时绘制
+            setTimeout(plotFunction, 100);
+            
+            // 修复角度模式处理
+            function convertAngleMode(expr, mode) {
+                if (mode === 'degrees') {
+                    return expr
+                        .replace(/sin\(/g, 'Math.sin(Math.PI/180*')
+                        .replace(/cos\(/g, 'Math.cos(Math.PI/180*')
+                        .replace(/tan\(/g, 'Math.tan(Math.PI/180*')
+                        .replace(/asin\(/g, 'Math.asin(')
+                        .replace(/acos\(/g, 'Math.acos(')
+                        .replace(/atan\(/g, 'Math.atan(');
+                }
+                return expr;
+            }
+    </script>
+</body>
+</html>

@@ -198,6 +198,96 @@
                 font-size: 18px;
             }
         }
+        
+        /* 历史记录样式 */
+        .history-section {
+            margin-top: 30px;
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #e8e8e8;
+        }
+        
+        .history-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+        }
+        
+        .history-title span {
+            margin-right: 8px;
+        }
+        
+        .clear-history-btn {
+            padding: 6px 12px;
+            background: #ff6b6b;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .clear-history-btn:hover {
+            background: #ee5a5a;
+        }
+        
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .history-item:hover {
+            background: #e9ecef;
+        }
+        
+        .history-item-input {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .history-item-result {
+            font-size: 13px;
+            color: #667eea;
+            font-weight: 500;
+        }
+        
+        .history-item-time {
+            font-size: 11px;
+            color: #999;
+        }
+        
+        .history-empty {
+            text-align: center;
+            color: #999;
+            padding: 20px;
+        }
     </style>
 </head>
 <body>
@@ -228,8 +318,11 @@
                         <div style="text-align: left; font-weight: 600; color: #2c3e50; margin-bottom: 10px; font-size: 14px;">
                             大写金额
                         </div>
-                        <div class="result-item amount-result" id="amount-result" style="min-height: 80px; justify-content: center; text-align: center;">
-                            <span class="result-value" style="font-size: 15px; line-height: 1.4;">请输入金额</span>
+                        <div class="result-item amount-result" id="amount-result" style="min-height: 150px; justify-content: flex-start; text-align: left; flex-direction: column; padding: 15px;">
+                            <div style="font-size: 16px; line-height: 1.6; margin-bottom: 10px; min-height: 80px; display: flex; align-items: center;">
+                                <span class="result-value">请输入金额</span>
+                            </div>
+                            <!-- 历史记录将在这里显示 -->
                         </div>
                     </div>
                 </div>
@@ -241,6 +334,7 @@
                         <div class="rate-status" id="currency-status">加载中...</div>
                     </div>
                     <select class="unit-select" id="currency-to">
+                        <option value="CNY">人民币 (CNY)</option>
                         <option value="USD">美元 (USD)</option>
                         <option value="EUR">欧元 (EUR)</option>
                         <option value="GBP">英镑 (GBP)</option>

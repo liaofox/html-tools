@@ -2,11 +2,20 @@
 class UniversalConverter {
     constructor() {
         this.exchangeRates = {};
+        this.defaultRates = {
+            CNY: 1,
+            USD: 0.139,
+            EUR: 0.128,
+            GBP: 0.110,
+            JPY: 20.5,
+            KRW: 182.0
+        };
         this.currencies = ['USD', 'EUR', 'GBP', 'JPY', 'KRW'];
         this.lengthUnits = ['cm', 'm', 'mm', 'km', 'inch'];
         this.volumeUnits = ['mL', 'L', 'm3', 'gal'];
         this.weightUnits = ['g', 'kg', 'mg', 'lb', 'oz'];
         this.amountHistory = [];
+        this.lastInputValue = ''; // 初始化为空
         this.init();
     }
 
@@ -19,25 +28,39 @@ class UniversalConverter {
 
     async fetchExchangeRates() {
         try {
-            const response = await fetch('https://api.exchangerate.host/latest?base=CNY');
+            // 使用更可靠的汇率API
+            const response = await fetch('https://open.er-api.com/v6/latest/CNY');
             if (response.ok) {
                 const data = await response.json();
-                this.exchangeRates = data.rates;
-                this.rateStatus = 'success';
-            } else {
-                throw new Error('API响应无效');
+                if (data.result === 'success') {
+                    this.exchangeRates = data.rates;
+                    this.rateStatus = 'success';
+                    this.defaultRates = {...data.rates}; // 存储为默认汇率
+                    return;
+                }
             }
+            throw new Error('API响应无效');
         } catch (error) {
-            this.exchangeRates = { CNY: 1, USD: 0.14, EUR: 0.13, GBP: 0.11, JPY: 20.0, KRW: 180.0 };
+            // 使用合理的默认汇率作为备用
+            this.defaultRates = {
+                CNY: 1,
+                USD: 0.139,    // 1 CNY = 0.139 USD
+                EUR: 0.128,    // 1 CNY = 0.128 EUR
+                GBP: 0.110,    // 1 CNY = 0.110 GBP
+                JPY: 20.5,     // 1 CNY = 20.5 JPY
+                KRW: 182.0     // 1 CNY = 182.0 KRW
+            };
+            this.exchangeRates = {...this.defaultRates};
             this.rateStatus = 'error';
         }
     }
 
     renderUnitLists() {
-        // 货币 - 使用中文显示
-        const currencyNames = { USD: '美元', EUR: '欧元', GBP: '英镑', JPY: '日元', KRW: '韩元' };
+        // 货币 - 使用中文显示，包含人民币
+        const currencyNames = { CNY: '人民币', USD: '美元', EUR: '欧元', GBP: '英镑', JPY: '日元', KRW: '韩元' };
+        const allCurrencies = ['CNY', ...this.currencies];
         const currencyContainer = document.getElementById('currency-results');
-        currencyContainer.innerHTML = this.currencies.map(c => `
+        currencyContainer.innerHTML = allCurrencies.map(c => `
             <div class="result-item" id="currency-${c}">
                 <span class="result-unit">${currencyNames[c]}</span>
                 <span class="result-value">0</span>
@@ -76,131 +99,381 @@ class UniversalConverter {
         const statusElement = document.getElementById('currency-status');
         if (this.rateStatus === 'success') {
             statusElement.textContent = '✅ 实时汇率';
-            statusElement.className = 'rate-status';
+            statusElement.className = 'rate-status success';
+            statusElement.style.background = '#e8f5e8';
+            statusElement.style.color = '#27ae60';
         } else {
             statusElement.textContent = '⚠️ 默认汇率';
             statusElement.className = 'rate-status error';
+            statusElement.style.background = '#ffe6e6';
+            statusElement.style.color = '#e74c3c';
         }
     }
 
     setupEventListeners() {
-        document.getElementById('main-input').addEventListener('input', () => this.handleInput());
-        document.getElementById('currency-to').addEventListener('change', () => this.convertCurrency());
-        document.getElementById('length-to').addEventListener('change', () => this.convertLength());
-        document.getElementById('volume-to').addEventListener('change', () => this.convertVolume());
-        document.getElementById('weight-to').addEventListener('change', () => this.convertWeight());
+        const mainInput = document.getElementById('main-input');
+        mainInput.addEventListener('input', () => this.handleInput());
+        mainInput.addEventListener('blur', () => {
+            const inputStr = document.getElementById('main-input').value.trim();
+            if (inputStr === '') return;
+            
+            // 检查是否为有效数字
+            const isValidNumber = /^-?\d+(\.\d+)?$/.test(inputStr);
+            if (!isValidNumber) return;
+            
+            const numValue = parseFloat(inputStr);
+            if (isNaN(numValue)) return;
+            
+            // 金额转大写
+            const amountResult = this.convertAmountToChinese(inputStr);
+            
+            // 当光标移出输入框时，将当前输入作为一次历史记录保存
+            this.addToHistory(inputStr, amountResult);
+            this.lastInputValue = inputStr;
+        });
+        
+        document.getElementById('currency-to').addEventListener('change', () => this.handleInput());
+        document.getElementById('length-to').addEventListener('change', () => this.handleInput());
+        document.getElementById('volume-to').addEventListener('change', () => this.handleInput());
+        document.getElementById('weight-to').addEventListener('change', () => this.handleInput());
     }
 
     handleInput() {
-        const value = document.getElementById('main-input').value.trim();
-        if (value === '') {
+        const inputStr = document.getElementById('main-input').value.trim();
+        const inputElement = document.getElementById('main-input');
+        
+        // 清除之前的错误样式
+        inputElement.style.borderColor = '#e8e8e8';
+        
+        if (inputStr === '') {
+            this.clearAllResults();
+            // 完全清除输入时才记录历史
+            if (this.lastInputValue !== '') {
+                this.lastInputValue = '';
+            }
+            return;
+        }
+
+        // 检查是否为有效数字
+        const isValidNumber = /^-?\d+(\.\d+)?$/.test(inputStr);
+        if (!isValidNumber) {
+            document.getElementById('amount-result').querySelector('.result-value').textContent = '输入格式错误';
+            inputElement.style.borderColor = '#ff6b6b';
             this.clearAllResults();
             return;
         }
 
-        const numValue = parseFloat(value);
+        // 更严格的数值解析
+        const numValue = parseFloat(inputStr);
         if (isNaN(numValue)) {
-            document.getElementById('amount-result').querySelector('.result-value').textContent = '无效金额';
+            document.getElementById('amount-result').querySelector('.result-value').textContent = '无效输入';
+            inputElement.style.borderColor = '#ff6b6b';
+            this.clearAllResults();
             return;
         }
 
         // 金额转大写
-        const amountResult = this.convertAmountToChinese(value);
+        const amountResult = this.convertAmountToChinese(inputStr);
         document.getElementById('amount-result').querySelector('.result-value').textContent = amountResult;
 
-        // 其他转换
+        // 强制更新所有转换
         this.convertAll(numValue);
+        
+        // 更新当前输入值但不记录历史
+        this.lastInputValue = inputStr;
     }
 
     convertAll(value) {
+        if (isNaN(value)) return;
         this.convertCurrency(value);
         this.convertLength(value);
         this.convertVolume(value);
         this.convertWeight(value);
     }
-
     convertCurrency(value) {
+        if (isNaN(value)) {
+            this.currencies.forEach(currency => {
+                const el = document.getElementById(`currency-${currency}`);
+                if (el) el.querySelector('.result-value').textContent = '0';
+            });
+            return;
+        }
+        
+        // 确保汇率存在，优先使用实时汇率，失败时使用默认汇率
+        if (!this.exchangeRates || Object.keys(this.exchangeRates).length === 0) {
+            this.exchangeRates = {...this.defaultRates};
+        }
+        
         const toCurrency = document.getElementById('currency-to').value;
-        const rate = this.exchangeRates[toCurrency] || 1;
-        const result = value * rate;
-        const currencyNames = { USD: '美元', EUR: '欧元', GBP: '英镑', JPY: '日元', KRW: '韩元' };
-        document.getElementById(`currency-${toCurrency}`).querySelector('.result-value').textContent = result.toFixed(4);
-        document.getElementById(`currency-${toCurrency}`).querySelector('.result-unit').textContent = currencyNames[toCurrency];
+        const currencyNames = {
+            CNY: '人民币',
+            USD: '美元',
+            EUR: '欧元',
+            GBP: '英镑',
+            JPY: '日元',
+            KRW: '韩元'
+        };
+        
+        // 添加CNY到货币列表
+        const allCurrencies = ['CNY', ...this.currencies];
+        
+        // 计算所有货币的转换结果
+        allCurrencies.forEach(currency => {
+            // 公式: (输入值 / 目标货币汇率) * 当前货币汇率
+            const result = (value / this.exchangeRates[toCurrency]) * this.exchangeRates[currency];
+            
+            const element = document.getElementById(`currency-${currency}`);
+            if (element) {
+                element.querySelector('.result-value').textContent = result.toFixed(4);
+                element.querySelector('.result-unit').textContent = currencyNames[currency];
+            }
+        });
     }
 
     convertLength(value) {
-        const toUnit = document.getElementById('length-to').value;
-        const result = this.fromMeters(value, toUnit);
-        document.getElementById(`length-${toUnit}`).querySelector('.result-value').textContent = result.toFixed(4);
+        if (isNaN(value)) {
+            this.lengthUnits.forEach(unit => {
+                const el = document.getElementById(`length-${unit}`);
+                if (el) el.querySelector('.result-value').textContent = '0';
+            });
+            return;
+        }
+        
+        const fromUnit = document.getElementById('length-to').value;
+        const unitFactors = {
+            cm: 0.01,      // 1厘米 = 0.01米
+            m: 1,          // 1米 = 1米
+            mm: 0.001,     // 1毫米 = 0.001米
+            km: 1000,      // 1千米 = 1000米
+            inch: 0.0254   // 1英寸 = 0.0254米
+        };
+        
+        // 确保输入是有效数字
+        const numericValue = parseFloat(value);
+        if (isNaN(numericValue)) return;
+        
+        // 转换为基准单位(米)
+        const valueInMeters = numericValue * unitFactors[fromUnit];
+        
+        // 转换为所有单位
+        this.lengthUnits.forEach(unit => {
+            const result = valueInMeters / unitFactors[unit];
+            const el = document.getElementById(`length-${unit}`);
+            if (el) {
+                const displayValue = isNaN(result) ? '0' : result.toFixed(4);
+                el.querySelector('.result-value').textContent = displayValue;
+            }
+        });
     }
 
     convertVolume(value) {
-        const toUnit = document.getElementById('volume-to').value;
-        const result = this.fromLiters(value, toUnit);
-        document.getElementById(`volume-${toUnit}`).querySelector('.result-value').textContent = result.toFixed(4);
+        if (isNaN(value)) {
+            this.volumeUnits.forEach(unit => {
+                const el = document.getElementById(`volume-${unit}`);
+                if (el) el.querySelector('.result-value').textContent = '0';
+            });
+            return;
+        }
+        
+        const fromUnit = document.getElementById('volume-to').value;
+        const unitFactors = {
+            mL: 0.001,     // 1毫升 = 0.001升
+            L: 1,          // 1升 = 1升
+            m3: 1000,      // 1立方米 = 1000升
+            gal: 3.78541   // 1加仑 = 3.78541升
+        };
+        
+        // 转换为基准单位(升)
+        const valueInLiters = value * unitFactors[fromUnit];
+        
+        // 转换为所有单位
+        this.volumeUnits.forEach(unit => {
+            const result = valueInLiters / unitFactors[unit];
+            const el = document.getElementById(`volume-${unit}`);
+            if (el) el.querySelector('.result-value').textContent = result.toFixed(4);
+        });
     }
 
     convertWeight(value) {
-        const toUnit = document.getElementById('weight-to').value;
-        const result = this.fromKilograms(value, toUnit);
-        document.getElementById(`weight-${toUnit}`).querySelector('.result-value').textContent = result.toFixed(4);
+        if (isNaN(value)) {
+            this.weightUnits.forEach(unit => {
+                const el = document.getElementById(`weight-${unit}`);
+                if (el) el.querySelector('.result-value').textContent = '0';
+            });
+            return;
+        }
+        
+        const fromUnit = document.getElementById('weight-to').value;
+        const unitFactors = {
+            g: 0.001,      // 1克 = 0.001千克
+            kg: 1,         // 1千克 = 1千克
+            mg: 0.000001,  // 1毫克 = 0.000001千克
+            lb: 0.453592,  // 1磅 = 0.453592千克
+            oz: 0.0283495  // 1盎司 = 0.0283495千克
+        };
+        
+        // 转换为基准单位(千克)
+        const valueInKilograms = value * unitFactors[fromUnit];
+        
+        // 转换为所有单位
+        this.weightUnits.forEach(unit => {
+            const result = valueInKilograms / unitFactors[unit];
+            const el = document.getElementById(`weight-${unit}`);
+            if (el) el.querySelector('.result-value').textContent = result.toFixed(4);
+        });
     }
 
     convertAmountToChinese(amount) {
         if (!amount) return '';
         
         // 移除非数字字符，只保留数字和小数点
-        const cleaned = amount.replace(/[^\d.]/g, '');
+        const cleaned = amount.replace(/[^\d.-]/g, '');
         if (!cleaned) return '';
         
         const [integerPart, decimalPart = ''] = cleaned.split('.');
+        const decimalDigits = decimalPart.padEnd(2, '0').substr(0, 2);
         
-        const numbers = ['零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖'];
-        const units = ['', '拾', '佰', '仟'];
-        const bigUnits = ['', '万', '亿'];
+        const cnNums = ['零', '壹', '贰', '叁', '肆', '伍', '陆', '柒', '捌', '玖'];
+        const cnIntRadice = ['', '拾', '佰', '仟'];
+        const cnIntUnits = ['', '万', '亿', '兆'];
+        const cnDecUnits = ['角', '分'];
+        const cnInteger = '整';
+        const cnIntLast = '元';
         
         // 处理整数部分
-        let result = '';
-        let integerStr = integerPart.padStart(12, '0'); // 补齐到12位
+        let integerStr = integerPart.replace(/^0+/, '') || '0';
+        let chineseStr = '';
+        let zeroCount = 0;
         
-        for (let i = 0; i < 4; i++) {
-            const group = integerStr.substr(i * 3, 3);
-            let groupResult = '';
+        for (let i = 0; i < integerStr.length; i++) {
+            const n = integerStr.substr(i, 1);
+            const p = integerStr.length - i - 1;
+            const q = Math.floor(p / 4);
+            const m = p % 4;
             
-            for (let j = 0; j < 3; j++) {
-                const digit = parseInt(group[j]);
-                if (digit !== 0) {
-                    groupResult += numbers[digit] + units[2 - j];
+            if (n === '0') {
+                zeroCount++;
+            } else {
+                if (zeroCount > 0) {
+                    chineseStr += cnNums[0];
                 }
+                zeroCount = 0;
+                chineseStr += cnNums[parseInt(n)] + cnIntRadice[m];
             }
             
-            if (groupResult) {
-                result += groupResult + bigUnits[3 - i];
+            if (m === 0 && zeroCount < 4) {
+                chineseStr += cnIntUnits[q];
             }
         }
         
-        result = result.replace(/零+/g, '零').replace(/零$/, '');
-        result = result || '零';
-        result += '元';
+        chineseStr += cnIntLast;
         
         // 处理小数部分
-        if (decimalPart) {
-            if (decimalPart[0] !== '0') result += numbers[parseInt(decimalPart[0])] + '角';
-            if (decimalPart[1] && decimalPart[1] !== '0') result += numbers[parseInt(decimalPart[1])] + '分';
+        if (decimalDigits !== '00') {
+            const decInt = parseInt(decimalDigits, 10);
+            const jiao = Math.floor(decInt / 10);
+            const fen = decInt % 10;
+            
+            if (jiao > 0) {
+                chineseStr += cnNums[jiao] + cnDecUnits[0];
+            }
+            if (fen > 0) {
+                chineseStr += cnNums[fen] + cnDecUnits[1];
+            }
         } else {
-            result += '整';
+            chineseStr += cnInteger;
         }
         
-        return result.replace(/^零+/, '').replace(/零元/, '零').replace(/零$/, '');
+        // 处理特殊情况
+        if (chineseStr.startsWith('壹拾')) {
+            chineseStr = chineseStr.substring(1);
+        }
+        
+        return chineseStr;
     }
 
     clearAllResults() {
         document.getElementById('amount-result').querySelector('.result-value').textContent = '请输入金额';
         document.querySelectorAll('.result-value').forEach(el => el.textContent = '0');
     }
+
+    addToHistory(inputStr, chineseResult) {
+        // 检查是否已存在相同的记录
+        const isDuplicate = this.amountHistory.some(item => 
+            item.input === inputStr && item.result === chineseResult
+        );
+        
+        if (!isDuplicate) {
+            // 添加新记录到顶部
+            const newItem = {
+                input: inputStr,
+                result: chineseResult,
+                timestamp: new Date().toLocaleTimeString('zh-CN')
+            };
+            this.amountHistory.unshift(newItem);
+            
+            // 限制历史记录数量为5条
+            if (this.amountHistory.length > 5) {
+                this.amountHistory.pop();
+            }
+            
+            // 渲染历史记录到金额模块
+            this.renderHistory();
+        }
+    }
+
+    renderHistory() {
+        const historyContainer = document.getElementById('amount-result');
+        
+        // 清空历史显示区域
+        let historyElement = historyContainer.querySelector('.history-display');
+        if (!historyElement) {
+            historyElement = document.createElement('div');
+            historyElement.className = 'history-display';
+            historyContainer.appendChild(historyElement);
+        }
+        
+        if (this.amountHistory.length === 0) {
+            historyElement.innerHTML = '';
+            return;
+        }
+        
+        // 显示所有5条历史记录，左对齐，最新记录在上
+        const historyHtml = this.amountHistory.map(item => `
+            <div style="font-size: 12px; color: #666; margin-bottom: 3px; text-align: left; line-height: 1.3;">
+                ${item.input} → ${item.result}
+            </div>
+        `).join('');
+        
+        historyElement.innerHTML = historyHtml;
+    }
+
+    clearHistory() {
+        this.amountHistory = [];
+        this.renderHistory();
+    }
 }
 
 let converter;
-document.addEventListener('DOMContentLoaded', () => { converter = new UniversalConverter(); });
+// 确保DOM完全加载后初始化
+document.addEventListener('DOMContentLoaded', () => { 
+    converter = new UniversalConverter(); 
+    // 初始化后强制更新一次显示
+    document.getElementById('main-input').dispatchEvent(new Event('input'));
+});
 
 function handleInput() { converter.handleInput(); }
+
+function restoreFromHistory(index) {
+    if (converter && converter.amountHistory[index]) {
+        const item = converter.amountHistory[index];
+        document.getElementById('main-input').value = item.input;
+        handleInput();
+    }
+}
+
+function clearHistory() {
+    if (converter) {
+        converter.clearHistory();
+    }
+}
