@@ -30,13 +30,13 @@
         .container {
             max-width: 800px;
             margin: 0 auto;
-            padding: 45px 12px 12px; /* 减少25%的高度 */
+            padding: 65px 12px 12px; /* 上边距增加20px */
         }
 
         .calculator-container {
             display: grid;
-            grid-template-columns: 1.2fr 1fr;
-            gap: 25px;
+            grid-template-columns: 1.5fr 1fr;
+            gap: 20px;
         }
 
         .calculator-main {
@@ -44,6 +44,109 @@
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+
+        .history-sidebar {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            height: 750px; /* 压缩高度减少空白 */
+            display: flex;
+            flex-direction: column;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e8e8e8;
+        }
+
+        .history-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        .clear-history-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .clear-history-btn:hover {
+            background: #c0392b;
+        }
+
+        .history-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            flex: 1;
+            overflow-y: auto;
+            max-height: 550px;
+        }
+
+        .history-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: block;
+            width: 100%;
+            text-align: left;
+            border: none;
+            background: none;
+            font-family: inherit;
+        }
+
+        .history-item:hover {
+            background: #f8f9fa;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+
+        .history-expr {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 3px;
+            font-family: 'Courier New', monospace;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-result {
+            font-size: 12px;
+            font-weight: 600;
+            color: #2c3e50;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .history-time {
+            font-size: 10px;
+            color: #999;
+            margin-top: 2px;
+        }
+
+        .empty-history {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            padding: 20px;
         }
 
         .display {
@@ -60,41 +163,37 @@
             white-space: nowrap;
         }
 
+        .mode-status {
+            text-align: center;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+
         .input-history-container {
             background: #f8f9fa;
             border-radius: 6px;
             padding: 12px;
             margin-bottom: 15px;
+            display: flex;
+            flex-direction: column;
         }
 
-        .history-panel {
-            height: 90px;
-            overflow-y: auto;
-            margin-bottom: 12px;
-            border-bottom: 2px solid #e8e8e8;
-            padding-bottom: 12px;
+        .input-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
         }
 
-        .history-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-        }
-
-        .history-item {
-            padding: 6px;
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
-            color: #666;
-        }
-
-        .history-result {
-            font-weight: 600;
-            color: #2c3e50;
+        .mode-indicator {
+            color: #27ae60;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 14px;
         }
 
         .input-wrapper {
-            position: relative;
+            flex: 1;
         }
 
         .input-wrapper input {
@@ -136,15 +235,17 @@
         }
 
         .calc-btn {
-            padding: 12px 8px;
+            padding: 8px 6px; /* 高度缩小为0.8倍 */
             border: 2px solid #e8e8e8;
             border-radius: 6px;
             background: white;
-            font-size: 14px;
+            font-size: 12px; /* 字体也相应缩小 */
             font-weight: 500;
             cursor: pointer;
             transition: all 0.2s ease;
             text-align: center;
+            height: 32px; /* 固定高度 */
+            box-sizing: border-box;
         }
 
         .calc-btn {
@@ -252,15 +353,13 @@
             font-style: italic;
         }
 
+        /* 移除响应式布局，固定布局 */
         @media (max-width: 1200px) {
             .calculator-container {
-                grid-template-columns: 1fr;
+                grid-template-columns: 1.5fr 1fr;
             }
             .buttons-grid {
-                grid-template-columns: repeat(4, 1fr);
-            }
-            .bottom-buttons {
-                grid-template-columns: repeat(3, 1fr);
+                grid-template-columns: repeat(6, 1fr);
             }
         }
     </style>
@@ -274,113 +373,133 @@
     </header>
 
     <div class="container">
-        <div class="calculator-main">
+        <div class="calculator-container">
+            <div class="calculator-main">
             <div class="display" id="display">0</div>
             
             <div class="input-history-container">
-                <div class="history-panel">
-                    <ul class="history-list" id="history-list">
-                        <li class="empty-history">暂无计算历史</li>
-                    </ul>
-                </div>
-                <div class="input-wrapper">
-                    <input type="text" id="math-input" placeholder="输入数学表达式，支持 sin(x)、cos(x)、x^2 等" 
-                           onkeydown="handleKeyDown(event)" onkeypress="handleEnter(event)">
+                <div class="input-row">
+                    <span class="mode-indicator" id="mode-indicator" style="font-size: 10px; margin-top: -18px; margin-right: 8px; min-width: 30px; display: inline-block; text-align: left;">deg</span>
+                    <div class="input-wrapper">
+                        <input type="text" id="math-input" placeholder="输入数学表达式，支持 sin(x)、cos(x)、x^2 等" 
+                               onkeydown="handleKeyDown(event)" onkeypress="handleEnter(event)" style="font-size: 11px;">
+                    </div>
                 </div>
             </div>
 
-            <!-- 按钮布局保持不变 -->
+            <!-- 参考科学计算器设计的按钮布局 -->
+            
+            <!-- 第一行：清除、括号、运算符 -->
             <div class="buttons-grid">
                 <button class="calc-btn clear" onclick="clearAll()">C</button>
                 <button class="calc-btn" onclick="backspace()">⌫</button>
                 <button class="calc-btn operator" onclick="addToInput('(')">(</button>
                 <button class="calc-btn operator" onclick="addToInput(')')">)</button>
-                <button class="calc-btn function" onclick="addToInput('sin(')">sin</button>
-                <button class="calc-btn function" onclick="addToInput('cos(')">cos</button>
+                <button class="calc-btn operator" onclick="addToInput('^')">^</button>
+                <button class="calc-btn function" onclick="addToInput('sqrt(')">√</button>
             </div>
 
+            <!-- 第二行：数字和运算符 -->
             <div class="buttons-grid">
                 <button class="calc-btn number" onclick="addToInput('7')">7</button>
                 <button class="calc-btn number" onclick="addToInput('8')">8</button>
                 <button class="calc-btn number" onclick="addToInput('9')">9</button>
-                <button class="calc-btn operator" onclick="addToInput('+')">+</button>
-                <button class="calc-btn function" onclick="addToInput('tan(')">tan</button>
+                <button class="calc-btn operator" onclick="addToInput('/')">÷</button>
+                <button class="calc-btn operator" onclick="addToInput('*')">×</button>
                 <button class="calc-btn function" onclick="addToInput('log(')">log</button>
             </div>
 
+            <!-- 第三行：数字和运算符 -->
             <div class="buttons-grid">
                 <button class="calc-btn number" onclick="addToInput('4')">4</button>
                 <button class="calc-btn number" onclick="addToInput('5')">5</button>
                 <button class="calc-btn number" onclick="addToInput('6')">6</button>
                 <button class="calc-btn operator" onclick="addToInput('-')">-</button>
-                <button class="calc-btn function" onclick="addToInput('sqrt(')">√</button>
+                <button class="calc-btn operator" onclick="addToInput('+')">+</button>
                 <button class="calc-btn function" onclick="addToInput('ln(')">ln</button>
             </div>
 
+            <!-- 第四行：数字和运算符 -->
             <div class="buttons-grid">
                 <button class="calc-btn number" onclick="addToInput('1')">1</button>
                 <button class="calc-btn number" onclick="addToInput('2')">2</button>
                 <button class="calc-btn number" onclick="addToInput('3')">3</button>
-                <button class="calc-btn operator" onclick="addToInput('*')">×</button>
-                <button class="calc-btn function" onclick="addToInput('abs(')">abs</button>
-                <button class="calc-btn equals" onclick="calculate()">=</button>
+                <button class="calc-btn constant" onclick="addToInput('π')">π</button>
+                <button class="calc-btn constant" onclick="addToInput('e')">e</button>
+                <button class="calc-btn equals" onclick="calculate()" style="font-size: 14px; font-weight: bold;">=</button>
             </div>
 
+            <!-- 第五行：0、小数和函数 -->
             <div class="buttons-grid">
                 <button class="calc-btn number" onclick="addToInput('0')">0</button>
                 <button class="calc-btn number" onclick="addToInput('.')">.</button>
-                <button class="calc-btn operator" onclick="addToInput('/')">÷</button>
-                <button class="calc-btn operator" onclick="addToInput('^')">^</button>
-                <button class="calc-btn constant" onclick="addToInput('π')">π</button>
-                <button class="calc-btn constant" onclick="addToInput('e')">e</button>
-            </div>
-
-            <!-- 科学函数区域 -->
-            <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 10px;">
-                <button class="calc-btn function" onclick="addToInput('sin(')">sin</button>
-                <button class="calc-btn function" onclick="addToInput('cos(')">cos</button>
-                <button class="calc-btn function" onclick="addToInput('tan(')">tan</button>
-                <button class="calc-btn function" onclick="addToInput('asin(')">asin</button>
-                <button class="calc-btn function" onclick="addToInput('acos(')">acos</button>
-            </div>
-
-            <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 10px;">
-                <button class="calc-btn function" onclick="addToInput('atan(')">atan</button>
-                <button class="calc-btn function" onclick="addToInput('log(')">log</button>
-                <button class="calc-btn function" onclick="addToInput('ln(')">ln</button>
-                <button class="calc-btn function" onclick="addToInput('exp(')">exp</button>
-                <button class="calc-btn function" onclick="addToInput('sqrt(')">sqrt</button>
-            </div>
-
-            <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 10px;">
                 <button class="calc-btn function" onclick="addToInput('abs(')">abs</button>
+                <button class="calc-btn function" onclick="addToInput('exp(')">exp</button>
                 <button class="calc-btn function" onclick="addToInput('floor(')">floor</button>
                 <button class="calc-btn function" onclick="addToInput('ceil(')">ceil</button>
-                <button class="calc-btn function" onclick="addToInput('round(')">round</button>
-                <button class="calc-btn function" onclick="addToInput('random(')">rand</button>
             </div>
 
-            <!-- 功能按钮行 -->
-            <div style="display: grid; grid-template-columns: repeat(4, 0.33fr); gap: 8px; margin-bottom: 10px; justify-content: start;">
-                <!-- 角度模式切换按钮 -->
-                <button class="calc-btn" onclick="toggleAngleMode()" id="angle-mode" 
-                        style="background: #f39c12; color: white; height: 40px; font-size: 12px; min-width: 60px;">deg</button>
-                
-                <!-- 变量按钮 -->
-                <button class="calc-btn function" onclick="addToInput('x')" style="height: 40px; font-size: 12px; min-width: 40px;">x</button>
-                <button class="calc-btn function" onclick="addToInput('y')" style="height: 40px; font-size: 12px; min-width: 40px;">y</button>
-                
-                <!-- 绘图按钮 -->
-                <button class="calc-btn graph" onclick="plotFunction()" style="height: 40px; font-size: 12px; min-width: 60px;">📈 绘图</button>
+            <!-- 竖向排列的函数组（无标题） -->
+            <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; align-items: flex-start;">
+                <!-- 三角函数组 -->
+                <div style="width: 100%; padding: 12px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 8px; border-left: 4px solid #667eea;">
+                    <div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;">
+                        <button class="calc-btn function" onclick="addToInput('sin(')">sin</button>
+                        <button class="calc-btn function" onclick="addToInput('cos(')">cos</button>
+                        <button class="calc-btn function" onclick="addToInput('tan(')">tan</button>
+                        <button class="calc-btn function" onclick="addToInput('cot(')">cot</button>
+                        <button class="calc-btn function" onclick="addToInput('sec(')">sec</button>
+                        <button class="calc-btn function" onclick="addToInput('csc(')">csc</button>
+                        <button class="calc-btn function" onclick="addToInput('asin(')">asin</button>
+                        <button class="calc-btn function" onclick="addToInput('acos(')">acos</button>
+                        <button class="calc-btn function" onclick="addToInput('atan(')">atan</button>
+                        <button class="calc-btn function" onclick="addToInput('acot(')">acot</button>
+                    </div>
+                </div>
+
+                <!-- 其他函数组（绘图相关功能） -->
+                <div style="width: 100%; padding: 12px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 8px; border-left: 4px solid #764ba2;">
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;">
+                        <button class="calc-btn" onclick="toggleAngleMode()" id="angle-mode" 
+                                style="background: #f39c12; color: white; height: 32px; font-size: 12px;">deg</button>
+                        <button class="calc-btn function" onclick="addToInput('x')">x</button>
+                        <button class="calc-btn function" onclick="addToInput('y')">y</button>
+                        <button class="calc-btn graph" onclick="plotFunction()">📈绘图</button>
+                    </div>
+                </div>
             </div>
 
-            <!-- 绘图教程放在最下方 -->
-            <div class="graph-help" style="margin-top: 15px;">
-                <p style="margin: 0; font-size: 12px;"><strong>📖 绘图教程：</strong></p>
-                <p style="margin: 3px 0; font-size: 11px;">1. 输入含变量的函数，如 <code>sin(x)</code>、<code>x^2+1</code></p>
-                <p style="margin: 3px 0; font-size: 11px;">2. 点击 <code>📈 绘图</code> 按钮在新页面显示图像</p>
-                <p style="margin: 3px 0; font-size: 11px;">3. 可切换角度/弧度模式进行三角函数绘图</p>
+            <!-- 功能按钮行已移除 -->
+
+            <!-- 两列布局的使用指南 -->
+            <div class="graph-help" style="margin-top: 15px; padding: 12px;">
+                <p style="margin: 0 0 10px 0; font-size: 12px; font-weight: 600; color: #2c3e50;">🎯 使用指南</p>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 11px; line-height: 1.4;">
+                    <div>
+                        <div><strong>基本运算</strong>: + - * / ^</div>
+                        <div><strong>三角函数</strong>: sin cos tan</div>
+                        <div><strong>反三角函数</strong>: asin acos atan</div>
+                        <div><strong>对数函数</strong>: log(10) ln(e)</div>
+                    </div>
+                    <div>
+                        <div><strong>其他函数</strong>: sqrt abs exp</div>
+                        <div><strong>取整函数</strong>: floor ceil round</div>
+                        <div><strong>常数</strong>: π e random</div>
+                        <div><strong>绘图</strong>: 输入含x的函数点📈</div>
+                    </div>
+                </div>
             </div>
+        </div>
+
+        <!-- 历史记录侧边栏 - 正确的右侧位置 -->
+        <div class="history-sidebar">
+            <div class="history-header">
+                <h3 class="history-title">📝 计算历史</h3>
+                <button class="clear-history-btn" onclick="clearHistory()">清空</button>
+            </div>
+            <ul class="history-list" id="history-list">
+                <li class="empty-history">暂无计算历史</li>
+            </ul>
         </div>
     </div>
 

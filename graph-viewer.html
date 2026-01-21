@@ -32,15 +32,16 @@
             background: #f8f9fa;
             border-radius: 10px;
         }
-        .back-button {
+        .close-btn {
             padding: 10px 20px;
-            background: #667eea;
+            background: #ff6b6b;
             color: white;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             text-decoration: none;
             display: inline-block;
+            font-size: 18px;
         }
         .function-info {
             margin: 15px 0;
@@ -51,10 +52,10 @@
     </style>
 </head>
 <body>
+    <button class="close-btn" onclick="window.close()">× 关闭</button>
     <div class="container">
         <div class="graph-header">
             <h1>📈 函数图像</h1>
-            <a href="scientific-calculator.html" class="back-button">← 返回计算器</a>
         </div>
         
         <div class="function-info">
@@ -121,11 +122,47 @@
             }
         });
         
+            // 生成用于 eval 的表达式（与计算器一致的处理）
+            function preprocessForEval(expr, mode) {
+                let s = expr;
+                s = s.replace(/π/g, 'Math.PI').replace(/\bpi\b/g, 'Math.PI').replace(/e/g, 'Math.E').replace(/\^/g, '**');
+
+                if (mode === 'degrees') {
+                    s = s.replace(/asin\(([^)]+)\)/g, '(Math.asin($1) * 180 / Math.PI)')
+                         .replace(/acos\(([^)]+)\)/g, '(Math.acos($1) * 180 / Math.PI)')
+                         .replace(/atan\(([^)]+)\)/g, '(Math.atan($1) * 180 / Math.PI)')
+                         .replace(/acot\(([^)]+)\)/g, '(Math.atan(1/($1)) * 180 / Math.PI)');
+                    s = s.replace(/sin\(([^)]+)\)/g, 'Math.sin(($1) * Math.PI / 180)')
+                         .replace(/cos\(([^)]+)\)/g, 'Math.cos(($1) * Math.PI / 180)')
+                         .replace(/tan\(([^)]+)\)/g, 'Math.tan(($1) * Math.PI / 180)')
+                         .replace(/cot\(([^)]+)\)/g, '(1/Math.tan(($1) * Math.PI / 180))')
+                         .replace(/sec\(([^)]+)\)/g, '(1/Math.cos(($1) * Math.PI / 180))')
+                         .replace(/csc\(([^)]+)\)/g, '(1/Math.sin(($1) * Math.PI / 180))');
+                } else {
+                    s = s.replace(/asin\(([^)]+)\)/g, 'Math.asin($1)')
+                         .replace(/acos\(([^)]+)\)/g, 'Math.acos($1)')
+                         .replace(/atan\(([^)]+)\)/g, 'Math.atan($1)')
+                         .replace(/acot\(([^)]+)\)/g, 'Math.atan(1/($1))');
+                    s = s.replace(/sin\(([^)]+)\)/g, 'Math.sin($1)')
+                         .replace(/cos\(([^)]+)\)/g, 'Math.cos($1)')
+                         .replace(/tan\(([^)]+)\)/g, 'Math.tan($1)')
+                         .replace(/cot\(([^)]+)\)/g, '(1/Math.tan($1))')
+                         .replace(/sec\(([^)]+)\)/g, '(1/Math.cos($1))')
+                         .replace(/csc\(([^)]+)\)/g, '(1/Math.sin($1))');
+                }
+                s = s.replace(/\blog\(/g, 'Math.log10(')
+                     .replace(/\bln\(/g, 'Math.log(')
+                     .replace(/\bsqrt\(/g, 'Math.sqrt(')
+                     .replace(/\bexp\(/g, 'Math.exp(');
+
+                return s;
+            }
+
             // 绘制函数图像 - 智能坐标轴调整
             function plotFunction() {
                 const xValues = [];
                 const yValues = [];
-                const step = 0.1;
+                let step = 0.1;
                 let yMin = Infinity;
                 let yMax = -Infinity;
                 
@@ -135,42 +172,30 @@
                 // 根据函数类型动态调整x轴范围
                 if (functionExpr.includes('log') || functionExpr.includes('sqrt')) {
                     xRange = 10; // 对数函数和平方根函数范围小一些
-                } else if (functionExpr.includes('sin') || functionExpr.includes('cos')) {
-                    xRange = 4 * Math.PI; // 三角函数范围大一些
+                } else if (functionExpr.match(/\b(sin|cos|tan)\b/)) {
+                    xRange = angleMode === 'degrees' ? 720 : 4 * Math.PI; // 三角函数：度模式720度，弧度模式4π
                 } else if (functionExpr.includes('^') || functionExpr.includes('**')) {
                     xRange = 5; // 幂函数范围小一些
                 }
                 
-                // 计算x轴范围
                 const xMin = -Math.abs(xRange);
                 const xMax = Math.abs(xRange);
+                step = (xMax - xMin) / 1000;
                 
-                for (let x = xMin; x <= xMax; x += step) {
+                for (let xv = xMin; xv <= xMax; xv += step) {
                     try {
-                        // 替换函数表达式中的变量
-                        let expr = functionExpr.replace(/x/gi, `(${x})`);
+                        // 只替换独立变量 x（使用单词边界，避免替换到 exp 等函数名）
+                        let expr = functionExpr.replace(/\bx\b/gi, `(${xv})`);
                         
-                        // 处理角度模式
-                        expr = convertAngleMode(expr, angleMode);
-                        
-                        // 替换其他数学函数和常数
-                        expr = expr
-                            .replace(/π/g, 'Math.PI')
-                            .replace(/pi/g, 'Math.PI')
-                            .replace(/e/g, 'Math.E')
-                            .replace(/\^/g, '**')
-                            .replace(/sqrt\(/g, 'Math.sqrt(')
-                            .replace(/log\(/g, 'Math.log10(')
-                            .replace(/ln\(/g, 'Math.log(')
-                            .replace(/exp\(/g, 'Math.exp(');
+                        // 预处理表达式（常数/函数映射，角度处理）
+                        expr = preprocessForEval(expr, angleMode);
                         
                         const y = eval(expr);
                         
                         if (typeof y === 'number' && isFinite(y)) {
-                            xValues.push(x);
+                            xValues.push(xv);
                             yValues.push(y);
                             
-                            // 更新y值范围
                             if (y < yMin) yMin = y;
                             if (y > yMax) yMax = y;
                         }
@@ -217,18 +242,48 @@
             // 页面加载时绘制
             setTimeout(plotFunction, 100);
             
-            // 修复角度模式处理
+            // 修复角度模式处理（与计算器一致）
             function convertAngleMode(expr, mode) {
+                let s = expr;
+                // 常数与幂
+                s = s.replace(/π/g, 'Math.PI').replace(/\bpi\b/g, 'Math.PI').replace(/e/g, 'Math.E').replace(/\^/g, '**');
+
+                // 反三角 -> 在deg下把结果转换为度
                 if (mode === 'degrees') {
-                    return expr
-                        .replace(/sin\(/g, 'Math.sin(Math.PI/180*')
-                        .replace(/cos\(/g, 'Math.cos(Math.PI/180*')
-                        .replace(/tan\(/g, 'Math.tan(Math.PI/180*')
-                        .replace(/asin\(/g, 'Math.asin(')
-                        .replace(/acos\(/g, 'Math.acos(')
-                        .replace(/atan\(/g, 'Math.atan(');
+                    s = s.replace(/asin\(([^)]+)\)/g, '(Math.asin($1) * 180 / Math.PI)')
+                         .replace(/acos\(([^)]+)\)/g, '(Math.acos($1) * 180 / Math.PI)')
+                         .replace(/atan\(([^)]+)\)/g, '(Math.atan($1) * 180 / Math.PI)')
+                         .replace(/acot\(([^)]+)\)/g, '(Math.atan(1/($1)) * 180 / Math.PI)');
+
+                    // 正三角参数转弧度
+                    s = s.replace(/sin\(([^)]+)\)/g, 'Math.sin(($1) * Math.PI / 180)')
+                         .replace(/cos\(([^)]+)\)/g, 'Math.cos(($1) * Math.PI / 180)')
+                         .replace(/tan\(([^)]+)\)/g, 'Math.tan(($1) * Math.PI / 180)')
+                         .replace(/cot\(([^)]+)\)/g, '(1/Math.tan(($1) * Math.PI / 180))')
+                         .replace(/sec\(([^)]+)\)/g, '(1/Math.cos(($1) * Math.PI / 180))')
+                         .replace(/csc\(([^)]+)\)/g, '(1/Math.sin(($1) * Math.PI / 180))');
+                } else {
+                    // radians
+                    s = s.replace(/asin\(([^)]+)\)/g, 'Math.asin($1)')
+                         .replace(/acos\(([^)]+)\)/g, 'Math.acos($1)')
+                         .replace(/atan\(([^)]+)\)/g, 'Math.atan($1)')
+                         .replace(/acot\(([^)]+)\)/g, 'Math.atan(1/($1))');
+
+                    s = s.replace(/sin\(([^)]+)\)/g, 'Math.sin($1)')
+                         .replace(/cos\(([^)]+)\)/g, 'Math.cos($1)')
+                         .replace(/tan\(([^)]+)\)/g, 'Math.tan($1)')
+                         .replace(/cot\(([^)]+)\)/g, '(1/Math.tan($1))')
+                         .replace(/sec\(([^)]+)\)/g, '(1/Math.cos($1))')
+                         .replace(/csc\(([^)]+)\)/g, '(1/Math.sin($1))');
                 }
-                return expr;
+
+                // 对数/根等
+                s = s.replace(/log\(/g, 'Math.log10(')
+                     .replace(/ln\(/g, 'Math.log(')
+                     .replace(/sqrt\(/g, 'Math.sqrt(')
+                     .replace(/exp\(/g, 'Math.exp(');
+
+                return s;
             }
     </script>
 </body>

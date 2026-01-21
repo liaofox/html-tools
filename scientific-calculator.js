@@ -25,13 +25,10 @@ class ScientificCalculator {
 
     setupCalculatorLayout() {
         // 确保所有必要的DOM元素都存在
-        if (!this.display) this.display = document.createElement('div');
+        if (!this.display) this.display = document.getElementById('display');
+        if (!this.modeIndicator) this.modeIndicator = document.getElementById('mode-indicator');
         if (!this.mathInput) {
-            this.mathInput = document.createElement('input');
-            this.mathInput.type = 'text';
-            this.mathInput.id = 'math-input';
-            this.mathInput.placeholder = '输入数学表达式...';
-            document.querySelector('.input-history-container').appendChild(this.mathInput);
+            this.mathInput = document.getElementById('math-input');
         }
     }
 
@@ -89,49 +86,18 @@ class ScientificCalculator {
             case 'Backspace':
                 // 允许默认的退格行为
                 break;
-            default:
-                // 处理其他按键
-                if (e.key.match(/[0-9+\-*/.^()]/)) {
-                    e.preventDefault();
-                    this.addToInput(e.key);
-                }
+            // 移除数字处理，防止重复
         }
     }
 
     handleGlobalKeyDown(e) {
-        // 只在输入框未聚焦时处理全局键盘事件
-        if (document.activeElement !== this.mathInput) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                this.calculate();
-            } else if (e.key.match(/[0-9+\-*/.^()a-zA-Z]/)) {
-                e.preventDefault();
-                
-                // 使用标志位防止重复输入
-                if (this.keyProcessing) return;
-                this.keyProcessing = true;
-                
-                // 先聚焦到输入框
-                this.mathInput.focus();
-                
-                // 直接添加到输入框
-                const input = this.mathInput;
-                const start = input.selectionStart;
-                const end = input.selectionEnd;
-                
-                input.value = input.value.substring(0, start) + e.key + input.value.substring(end);
-                input.setSelectionRange(start + e.key.length, start + e.key.length);
-                
-                // 触发输入事件更新显示
-                this.handleInput();
-                
-                // 50ms后重置标志位
-                setTimeout(() => {
-                    this.keyProcessing = false;
-                }, 50);
-            }
+        // 只处理全局Enter键
+        if (e.key === 'Enter' && document.activeElement !== this.mathInput) {
+            e.preventDefault();
+            this.calculate();
         }
     }
+
     handleInput() {
         const expr = this.mathInput.value.trim();
         if (!expr) {
@@ -168,54 +134,48 @@ class ScientificCalculator {
     }
 
     hasRealVariables(expr) {
-        // 更精确的变量检测：排除数学常数和函数名
-        const variables = expr.match(/[a-zA-Z]/g) || [];
-        if (variables.length === 0) return false;
-        
-        // 排除已知的数学常数和函数名
-        const mathConstants = ['e', 'pi', 'π'];
-        const mathFunctions = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 
-                              'sqrt', 'log', 'ln', 'exp', 'abs', 'floor', 'ceil', 'round'];
-        
-        // 检查表达式是否为函数调用（包含括号）
-        const functionCalls = expr.match(/[a-zA-Z]+\(/g) || [];
-        const allFunctionsValid = functionCalls.every(funcCall => {
-            const funcName = funcCall.replace('(', '');
-            return mathFunctions.includes(funcName);
-        });
-        
-        // 如果有函数调用，检查是否都是有效的数学函数
-        if (functionCalls.length > 0 && allFunctionsValid) {
-            // 检查函数参数中是否包含真正的变量
-            const functionArgs = expr.match(/[a-zA-Z]+\(([^)]+)\)/g) || [];
-            for (const arg of functionArgs) {
-                const content = arg.replace(/[a-zA-Z]+\(([^)]+)\)/, '$1');
-                const argVariables = content.match(/[a-zA-Z]/g) || [];
-                for (const variable of argVariables) {
-                    if (variable.length === 1 && !mathConstants.includes(variable.toLowerCase())) {
-                        return true; // 函数参数中包含真正的变量
-                    }
-                }
-            }
-            return false; // 所有函数参数都是常数或数字
+        // 更精确的变量检测：先识别标识符，排除函数名和常数后判断是否存在变量（如 x, y）
+        if (!expr) return false;
+
+        const mathConstants = new Set(['e', 'pi', 'π']);
+        const mathFunctions = new Set(['sin','cos','tan','cot','sec','csc','asin','acos','atan','acot',
+                                       'sqrt','log','ln','exp','abs','floor','ceil','round','random']);
+
+        // 提取所有连续字母标识符（函数名、常数、变量）
+        const identifiers = expr.match(/\b[a-zA-Z\u03C0]+\b/g) || [];
+
+        for (const id of identifiers) {
+            const lower = id.toLowerCase();
+            if (mathConstants.has(lower)) continue;      // 忽略常数
+            if (mathFunctions.has(lower)) continue;      // 忽略函数名
+            // 单字母标识符视作变量（如 x, y）；多字母未在函数/常数中也视为变量
+            if (lower.length === 1) return true;
+            // 也将其他非函数非常数标识符当作变量
+            return true;
         }
-        
-        // 检查是否为真正的变量（不是常数或函数名的一部分）
-        for (const variable of variables) {
-            // 如果是单字母且不是常数
-            if (variable.length === 1 && !mathConstants.includes(variable.toLowerCase())) {
+
+        // 进一步检查函数内参数是否包含变量（例如 sin(x)）
+        const functionArgs = expr.match(/[a-zA-Z]+\(([^)]*)\)/g) || [];
+        for (const fn of functionArgs) {
+            const content = fn.replace(/^[a-zA-Z]+\(([^)]*)\)$/, '$1');
+            const argIds = content.match(/\b[a-zA-Z\u03C0]+\b/g) || [];
+            for (const a of argIds) {
+                const la = a.toLowerCase();
+                if (mathConstants.has(la)) continue;
+                if (mathFunctions.has(la)) continue;
+                if (la.length === 1) return true;
                 return true;
             }
         }
-        
+
         return false;
     }
 
     validateExpression(expr) {
         if (!expr) return;
         
-        // 检查基本数学表达式语法
-        const mathExprPattern = /^[\d+\-*/().^a-zA-Z\s]+$/;
+        // 允许 π 字符（unicode \u03C0）
+        const mathExprPattern = /^[\d+\-*/().^a-zA-Z\u03C0\s]+$/;
         if (!mathExprPattern.test(expr)) {
             throw new Error('包含无效字符');
         }
@@ -234,13 +194,13 @@ class ScientificCalculator {
         // 检查连续运算符
         if (expr.match(/[+\-*/^]{2,}/)) throw new Error('连续运算符');
         
-        // 检查函数调用格式
+        // 检查函数调用格式（增加 cot/sec/csc/acot/random）
         if (expr.match(/[a-zA-Z]+\d*\(/)) {
-            const validFunctions = ['sin', 'cos', 'tan', 'asin', 'acos', 'atan', 
-                                  'sqrt', 'log', 'ln', 'exp', 'abs', 'floor', 'ceil', 'round'];
+            const validFunctions = ['sin','cos','tan','cot','sec','csc','asin','acos','atan','acot',
+                                    'sqrt','log','ln','exp','abs','floor','ceil','round','random'];
             const functions = expr.match(/[a-zA-Z]+\(/g) || [];
             for (const fn of functions) {
-                const funcName = fn.replace('(', '');
+                const funcName = fn.replace('(', '').toLowerCase();
                 if (!validFunctions.includes(funcName)) {
                     throw new Error(`无效函数: ${funcName}`);
                 }
@@ -248,60 +208,127 @@ class ScientificCalculator {
         }
     }
 
+    convertToRadians(expr) {
+        // 将角度转换为弧度（三角函数）
+        let processed = expr
+            .replace(/sin\(([^)]+)\)/g, 'Math.sin($1 * Math.PI / 180)')
+            .replace(/cos\(([^)]+)\)/g, 'Math.cos($1 * Math.PI / 180)')
+            .replace(/tan\(([^)]+)\)/g, 'Math.tan($1 * Math.PI / 180)');
+        
+        // 反三角函数：将弧度结果转换为角度
+        processed = processed
+            .replace(/asin\(([^)]+)\)/g, 'Math.asin($1) * 180 / Math.PI')
+            .replace(/acos\(([^)]+)\)/g, 'Math.acos($1) * 180 / Math.PI')
+            .replace(/atan\(([^)]+)\)/g, 'Math.atan($1) * 180 / Math.PI');
+        
+        return processed;
+    }
+
+    // 生成用于 eval 的表达式（处理常数、幂、三角/反三角、cot/sec/csc/acot）
+    buildEvalExpr(expr) {
+        let s = expr;
+        s = s.replace(/π/g, 'Math.PI').replace(/\bpi\b/g, 'Math.PI').replace(/e(?![a-zA-Z])/g, 'Math.E').replace(/\^/g, '**');
+
+        // 根据角度模式处理正/反三角、cot/sec/csc/acot
+        if (this.angleMode === 'degrees') {
+            // 反三角：输出角度
+            s = s.replace(/asin\(([^)]+)\)/g, '(Math.asin($1) * 180 / Math.PI)')
+                 .replace(/acos\(([^)]+)\)/g, '(Math.acos($1) * 180 / Math.PI)')
+                 .replace(/atan\(([^)]+)\)/g, '(Math.atan($1) * 180 / Math.PI)')
+                 .replace(/acot\(([^)]+)\)/g, '(Math.atan(1/($1)) * 180 / Math.PI)');
+
+            // 正三角：参数从度转弧度
+            s = s.replace(/sin\(([^)]+)\)/g, 'Math.sin(($1) * Math.PI / 180)')
+                 .replace(/cos\(([^)]+)\)/g, 'Math.cos(($1) * Math.PI / 180)')
+                 .replace(/tan\(([^)]+)\)/g, 'Math.tan(($1) * Math.PI / 180)')
+                 .replace(/cot\(([^)]+)\)/g, '(1/Math.tan(($1) * Math.PI / 180))')
+                 .replace(/sec\(([^)]+)\)/g, '(1/Math.cos(($1) * Math.PI / 180))')
+                 .replace(/csc\(([^)]+)\)/g, '(1/Math.sin(($1) * Math.PI / 180))');
+        } else {
+            // radians: 直接映射到 Math
+            s = s.replace(/asin\(([^)]+)\)/g, 'Math.asin($1)')
+                 .replace(/acos\(([^)]+)\)/g, 'Math.acos($1)')
+                 .replace(/atan\(([^)]+)\)/g, 'Math.atan($1)')
+                 .replace(/acot\(([^)]+)\)/g, 'Math.atan(1/($1))');
+
+            s = s.replace(/sin\(([^)]+)\)/g, 'Math.sin($1)')
+                 .replace(/cos\(([^)]+)\)/g, 'Math.cos($1)')
+                 .replace(/tan\(([^)]+)\)/g, 'Math.tan($1)')
+                 .replace(/cot\(([^)]+)\)/g, '(1/Math.tan($1))')
+                 .replace(/sec\(([^)]+)\)/g, '(1/Math.cos($1))')
+                 .replace(/csc\(([^)]+)\)/g, '(1/Math.sin($1))');
+        }
+
+        // 对数与其他函数
+        s = s.replace(/\blog\(/g, 'Math.log10(')
+             .replace(/\bln\(/g, 'Math.log(')
+             .replace(/\bsqrt\(/g, 'Math.sqrt(')
+             .replace(/\bexp\(/g, 'Math.exp(')
+             .replace(/\babs\(/g, 'Math.abs(')
+             .replace(/\brandom\(/g, 'Math.random(');
+
+        return s;
+    }
+
+    // 为 math.js 构建表达式（支持 deg 单位与反三角转度）
+    buildMathJsExpr(expr) {
+        let s = expr;
+        s = s.replace(/π/g, 'pi').replace(/\bpi\b/g, 'pi').replace(/e(?![a-zA-Z])/g, 'e');
+
+        // 对数
+        s = s.replace(/\blog\(/g, 'log10(').replace(/\bln\(/g, 'log(');
+
+        if (this.angleMode === 'degrees') {
+            s = s.replace(/asin\(([^)]+)\)/g, '(asin($1) * 180 / pi)')
+                 .replace(/acos\(([^)]+)\)/g, '(acos($1) * 180 / pi)')
+                 .replace(/atan\(([^)]+)\)/g, '(atan($1) * 180 / pi)')
+                 .replace(/acot\(([^)]+)\)/g, '(atan(1/($1)) * 180 / pi)');
+
+            s = s.replace(/sin\(([^)]+)\)/g, 'sin($1 deg)')
+                 .replace(/cos\(([^)]+)\)/g, 'cos($1 deg)')
+                 .replace(/tan\(([^)]+)\)/g, 'tan($1 deg)')
+                 .replace(/cot\(([^)]+)\)/g, '(1/tan($1 deg))')
+                 .replace(/sec\(([^)]+)\)/g, '(1/cos($1 deg))')
+                 .replace(/csc\(([^)]+)\)/g, '(1/sin($1 deg))');
+        } else {
+            s = s.replace(/asin\(([^)]+)\)/g, 'asin($1)')
+                 .replace(/acos\(([^)]+)\)/g, 'acos($1)')
+                 .replace(/atan\(([^)]+)\)/g, 'atan($1)')
+                 .replace(/acot\(([^)]+)\)/g, 'atan(1/($1))');
+
+            s = s.replace(/sin\(([^)]+)\)/g, 'sin($1)')
+                 .replace(/cos\(([^)]+)\)/g, 'cos($1)')
+                 .replace(/tan\(([^)]+)\)/g, 'tan($1)')
+                 .replace(/cot\(([^)]+)\)/g, '(1/tan($1))')
+                 .replace(/sec\(([^)]+)\)/g, '(1/cos($1))')
+                 .replace(/csc\(([^)]+)\)/g, '(1/sin($1))');
+        }
+
+        return s;
+    }
+
     evaluateExpression(expr) {
         if (!expr.trim()) return 0;
 
         try {
-            let processedExpr = expr;
-            
-            // 处理角度模式转换
-            if (this.angleMode === 'degrees') {
-                processedExpr = this.convertToRadians(processedExpr);
-            }
-
-            // 替换特殊常数和函数
-            processedExpr = processedExpr
-                .replace(/π/g, 'pi')
-                .replace(/pi/g, '3.141592653589793')
-                .replace(/e(?![a-zA-Z])/g, '2.718281828459045')
-                .replace(/\^/g, '**')
-                .replace(/sin\(/g, 'Math.sin(')
-                .replace(/cos\(/g, 'Math.cos(')
-                .replace(/tan\(/g, 'Math.tan(')
-                .replace(/asin\(/g, 'Math.asin(')
-                .replace(/acos\(/g, 'Math.acos(')
-                .replace(/atan\(/g, 'Math.atan(')
-                .replace(/sqrt\(/g, 'Math.sqrt(')
-                .replace(/log\(/g, 'Math.log10(')
-                .replace(/ln\(/g, 'Math.log(')
-                .replace(/exp\(/g, 'Math.exp(')
-                .replace(/abs\(/g, 'Math.abs(');
-
-            // 使用math.js进行精确计算（如果可用）
+            // 优先使用 math.js（更稳定和高精度）
             if (this.math) {
                 try {
-                    return this.math.evaluate(processedExpr);
+                    const mathExpr = this.buildMathJsExpr(expr);
+                    return this.math.evaluate(mathExpr);
                 } catch (mathError) {
-                    // 如果math.js失败，回退到eval
-                    console.warn('Math.js计算失败，使用内置计算:', mathError);
+                    console.warn('Math.js计算失败，回退eval:', mathError);
                 }
             }
 
-            // 安全地使用eval计算
-            const result = eval(processedExpr);
+            // eval 回退路径（浏览器原生）
+            const safeExpr = this.buildEvalExpr(expr);
+            // eslint-disable-next-line no-eval
+            const result = eval(safeExpr);
             return typeof result === 'number' ? result : undefined;
-
         } catch (error) {
             throw new Error('无效的数学表达式');
         }
-    }
-
-    convertToRadians(expr) {
-        // 将角度转换为弧度
-        // sin(20) -> Math.sin(20 * Math.PI / 180)
-        return expr.replace(/sin\(([^)]+)\)/g, 'Math.sin($1 * Math.PI / 180)')
-                 .replace(/cos\(([^)]+)\)/g, 'Math.cos($1 * Math.PI / 180)')
-                 .replace(/tan\(([^)]+)\)/g, 'Math.tan($1 * Math.PI / 180)');
     }
 
     calculate() {
@@ -317,12 +344,6 @@ class ScientificCalculator {
                 this.lastResult = result;
                 this.isResultDisplayed = true;
                 this.mathInput.classList.remove('error');
-                
-                // 在结果前添加角度模式状态
-                const modeText = this.angleMode === 'degrees' ? 'deg ' : 'rad ';
-                if (this.display.textContent !== '0' && !this.display.textContent.startsWith(modeText)) {
-                    this.display.textContent = modeText + this.display.textContent;
-                }
             } else {
                 throw new Error('计算结果无效');
             }
@@ -334,6 +355,9 @@ class ScientificCalculator {
 
     formatResult(num) {
         if (num === undefined || isNaN(num)) return '错误';
+        
+        // 处理非常接近0的数值
+        if (Math.abs(num) < 1e-10) return '0';
         
         // 处理极大或极小的数字使用科学计数法
         if (Math.abs(num) > 1e10 || (Math.abs(num) < 1e-10 && num !== 0)) {
@@ -386,9 +410,28 @@ class ScientificCalculator {
     }
 
     addToHistory(expr, result) {
-        this.history.unshift({ expr, result, timestamp: new Date().toLocaleTimeString() });
-        if (this.history.length > 10) this.history.pop();
-        this.renderHistory();
+        // 检查是否与上一条记录相同（连续重复）
+        const isConsecutiveDuplicate = this.history.length > 0 && 
+            this.history[0].expr === expr && 
+            this.history[0].result === result;
+        
+        if (!isConsecutiveDuplicate) {
+            this.history.unshift({ 
+                expr, 
+                result, 
+                timestamp: new Date().toLocaleTimeString('zh-CN', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                })
+            });
+            
+            // 限制历史记录最多100条
+            if (this.history.length > 100) {
+                this.history = this.history.slice(0, 100);
+            }
+            
+            this.renderHistory();
+        }
     }
 
     renderHistory() {
@@ -396,9 +439,14 @@ class ScientificCalculator {
         list.innerHTML = this.history.length ? 
             this.history.map(item => `
                 <li class="history-item" onclick="calculator.useHistory('${item.expr.replace(/'/g, "\\'")}')">
-                    <div class="history-expr">${item.expr}</div>
-                    <div class="history-result">= ${item.result}</div>
-                    <div class="history-time">${item.timestamp}</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-family: 'Courier New', monospace;">
+                        <span style="flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            ${item.expr} = ${item.result}
+                        </span>
+                        <span style="color: #999; font-size: 10px; margin-left: 8px;">
+                            ${item.timestamp}
+                        </span>
+                    </div>
                 </li>
             `).join('') : 
             '<li class="empty-history">暂无计算历史</li>';
@@ -431,17 +479,9 @@ class ScientificCalculator {
             btn.textContent = this.angleMode === 'degrees' ? 'deg' : 'rad';
         }
         
-        // 在显示框最左侧显示角度模式状态
-        const displayText = this.display.textContent;
-        if (displayText !== '0' && displayText !== '错误' && displayText !== '函数表达式') {
-            const modeText = this.angleMode === 'degrees' ? 'deg ' : 'rad ';
-            if (!displayText.startsWith('deg ') && !displayText.startsWith('rad ')) {
-                this.display.textContent = modeText + displayText;
-            } else if (displayText.startsWith('deg ') && this.angleMode === 'radians') {
-                this.display.textContent = 'rad ' + displayText.substring(4);
-            } else if (displayText.startsWith('rad ') && this.angleMode === 'degrees') {
-                this.display.textContent = 'deg ' + displayText.substring(4);
-            }
+        // 更新左侧指示器
+        if (this.modeIndicator) {
+            this.modeIndicator.textContent = this.angleMode === 'degrees' ? 'deg' : 'rad';
         }
     }
 
@@ -505,38 +545,158 @@ class ScientificCalculator {
 
 // 全局函数（用于HTML按钮调用）
 function addToInput(value) { 
-    if (calculator) calculator.addToInput(value); 
+	if (calculator) {
+		calculator.addToInput(value);
+		return;
+	}
+	// 回退：直接修改输入框
+	try {
+		const input = document.getElementById('math-input');
+		if (!input) return;
+		const start = input.selectionStart ?? input.value.length;
+		const end = input.selectionEnd ?? start;
+		input.value = input.value.substring(0, start) + value + input.value.substring(end);
+		input.setSelectionRange(start + value.length, start + value.length);
+		input.focus();
+		// 简单触发输入显示（尝试用基本替换显示结果）
+		simpleHandleInput();
+	} catch (e) {
+		console.error('addToInput 回退失败', e);
+	}
 }
 function calculate() { 
-    if (calculator) calculator.calculate(); 
+	if (calculator) { calculator.calculate(); return; }
+	// 回退：简单计算（支持 π、pi、^、log、ln）
+	try {
+		const input = document.getElementById('math-input');
+		const display = document.getElementById('display');
+		if (!input || !display) return;
+		const expr = (input.value || '').trim();
+		if (!expr) return;
+		const s = simpleBuildEval(expr);
+		// eslint-disable-next-line no-eval
+		const result = eval(s);
+		display.textContent = (typeof result === 'number' ? (Math.abs(result) < 1e-10 ? '0' : (Math.round(result * 1e12)/1e12).toString()) : '错误');
+	} catch (e) {
+		console.error('回退计算失败', e);
+		const display = document.getElementById('display');
+		if (display) display.textContent = '错误';
+	}
 }
 function clearAll() { 
-    if (calculator) calculator.clearAll(); 
+	if (calculator) { calculator.clearAll(); return; }
+	const input = document.getElementById('math-input');
+	const display = document.getElementById('display');
+	if (input) input.value = '';
+	if (display) display.textContent = '0';
 }
 function backspace() { 
-    if (calculator) calculator.backspace(); 
+	if (calculator) { calculator.backspace(); return; }
+	const input = document.getElementById('math-input');
+	if (!input) return;
+	const start = input.selectionStart ?? input.value.length;
+	const end = input.selectionEnd ?? start;
+	if (start === end && start > 0) {
+		input.value = input.value.substring(0, start - 1) + input.value.substring(end);
+		input.setSelectionRange(start - 1, start - 1);
+	} else {
+		input.value = input.value.substring(0, start) + input.value.substring(end);
+		input.setSelectionRange(start, start);
+	}
+	simpleHandleInput();
 }
 function plotFunction() { 
-    if (calculator) calculator.plotFunction(); 
+	if (calculator) { calculator.plotFunction(); return; }
+	// 回退：尝试打开绘图页面（基本传参）
+	const input = document.getElementById('math-input');
+	if (!input || !input.value.trim()) return alert('请输入函数表达式以绘图');
+	const encodedExpr = encodeURIComponent(input.value.trim());
+	window.open(`graph-viewer.html?function=${encodedExpr}&angleMode=degrees`, '_blank', 'width=1000,height=700');
 }
 function clearHistory() { 
-    if (calculator) calculator.clearHistory(); 
+	if (calculator) { calculator.clearHistory(); return; }
+	const list = document.getElementById('history-list');
+	if (list) list.innerHTML = '<li class="empty-history">暂无计算历史</li>';
 }
 function toggleAngleMode() { 
-    if (calculator) calculator.toggleAngleMode(); 
+	if (calculator) { calculator.toggleAngleMode(); return; }
+	// 回退：切换 mode 指示
+	const el = document.getElementById('mode-indicator');
+	if (!el) return;
+	el.textContent = (el.textContent === 'deg') ? 'rad' : 'deg';
 }
 function handleKeyDown(event) {
-    if (calculator) calculator.handleKeyDown(event);
+	if (calculator) { calculator.handleKeyDown(event); return; }
+	// 回退：仅处理 Enter => 计算
+	if (event.key === 'Enter') {
+		event.preventDefault();
+		calculate();
+	}
 }
 function handleEnter(event) {
-    if (event.key === 'Enter') {
-        event.preventDefault();
-        calculate();
-    }
+	if (event.key === 'Enter') {
+		event.preventDefault();
+		calculate();
+	}
+}
+
+// 简单回退方法：构建基本 eval 表达式（用于没有 calculator 时的临时计算，功能较弱但能应急）
+function simpleBuildEval(expr) {
+	let s = expr;
+	s = s.replace(/π/g, 'Math.PI').replace(/\bpi\b/gi, 'Math.PI').replace(/\^/g, '**');
+	s = s.replace(/\blog\(/gi, 'Math.log10(').replace(/\bln\(/gi, 'Math.log(');
+	// 三角函数（默认为度模式时，参数以度输入转换为弧度；无法区分当前角度模式时假设deg）
+	const modeEl = document.getElementById('mode-indicator');
+	const mode = modeEl ? (modeEl.textContent === 'rad' ? 'radians' : 'degrees') : 'degrees';
+	if (mode === 'degrees') {
+		s = s.replace(/sin\(([^)]+)\)/gi, 'Math.sin(($1) * Math.PI / 180)')
+			 .replace(/cos\(([^)]+)\)/gi, 'Math.cos(($1) * Math.PI / 180)')
+			 .replace(/tan\(([^)]+)\)/gi, 'Math.tan(($1) * Math.PI / 180)')
+			 .replace(/asin\(([^)]+)\)/gi, '(Math.asin($1) * 180 / Math.PI)')
+			 .replace(/acos\(([^)]+)\)/gi, '(Math.acos($1) * 180 / Math.PI)')
+			 .replace(/atan\(([^)]+)\)/gi, '(Math.atan($1) * 180 / Math.PI)');
+	} else {
+		s = s.replace(/sin\(([^)]+)\)/gi, 'Math.sin($1)')
+			 .replace(/cos\(([^)]+)\)/gi, 'Math.cos($1)')
+			 .replace(/tan\(([^)]+)\)/gi, 'Math.tan($1)')
+			 .replace(/asin\(([^)]+)\)/gi, 'Math.asin($1)')
+			 .replace(/acos\(([^)]+)\)/gi, 'Math.acos($1)')
+			 .replace(/atan\(([^)]+)\)/gi, 'Math.atan($1)');
+	}
+	// 其他
+	s = s.replace(/\bexp\(/gi, 'Math.exp(').replace(/\bsqrt\(/gi, 'Math.sqrt(').replace(/\babs\(/gi, 'Math.abs(');
+	return s;
+}
+
+// 简单输入处理：当没有 calculator 时，输入变化做基础显示
+function simpleHandleInput() {
+	const input = document.getElementById('math-input');
+	const display = document.getElementById('display');
+	if (!input || !display) return;
+	const expr = input.value.trim();
+	if (!expr) { display.textContent = '0'; return; }
+	try {
+		const s = simpleBuildEval(expr);
+		// eslint-disable-next-line no-eval
+		const result = eval(s);
+		if (typeof result === 'number') {
+			display.textContent = (Math.abs(result) < 1e-10) ? '0' : (Math.round(result * 1e12) / 1e12).toString();
+		} else {
+			display.textContent = '错误';
+		}
+	} catch (e) {
+		display.textContent = '错误';
+	}
 }
 
 // 初始化计算器
 let calculator;
 document.addEventListener('DOMContentLoaded', () => {
-    calculator = new ScientificCalculator();
+	try {
+		calculator = new ScientificCalculator();
+	} catch (initError) {
+		console.error('ScientificCalculator 初始化失败：', initError);
+		// 尝试回退：仍然让页面按钮可用（见下方全局函数回退）
+		calculator = null;
+	}
 });
